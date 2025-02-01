@@ -31,7 +31,7 @@
 
 	<set name="BUILD_DIR" value="export" />
 	<source path="source" />
-	<assets path="assets" />
+	<!-- <assets path="assets" /> -->
 
 	<!-- <haxedef name="FLX_NO_CACHE_BUSTING" /> -->
 
