@@ -40,7 +40,7 @@ class Terrain
 
 	var flashSprite:Sprite;
 
-	var graphicPath:String = "assets/images/wall.png";
+	var graphicPath:String = "";
 
 	public function new(bitmap:BitmapData, cellSize:Float, subSize:Float)
 	{

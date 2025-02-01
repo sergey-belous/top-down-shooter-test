@@ -170,7 +170,7 @@ class Trail extends FlxEmitter
 	{
 		super(0, 0);
 
-		loadParticles("assets/shooter.png", 20, 0);
+		// loadParticles("assets/shooter.png", 20, 0);
 		attach = Attach;
 
 		velocity.set(0, 0);
