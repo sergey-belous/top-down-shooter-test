@@ -245,40 +245,41 @@ class PlayState extends FlxState
 
 		trace(shooter.collides);
 
-		if (shooter.collides) {
+		// if (shooter.collides) {
 	
-			var possiblyCollided = FlxNapeSpace.space.bodiesInCircle(new Vec2(shooter.collidesSpr.getPosition().x, shooter.collidesSpr.getPosition().y), 96);
+		// 	var possiblyCollided = FlxNapeSpace.space.bodiesInCircle(new Vec2(shooter.collidesSpr.getPosition().x, shooter.collidesSpr.getPosition().y), 96);
 			
-			possiblyCollided.foreach(function(el){
-				if (el != box.body && el != walls) {
-					el.space = null;
-					el.velocity = new Vec2(0,0);
+		// 	possiblyCollided.foreach(function(el){
+		// 		if (el != box.body && el != walls) {
+		// 			el.space = null;
+		// 			el.velocity = new Vec2(0,0);
 
-					var toStamp = deadGroup.getFirstAlive();
-					// add(toStamp);
-					toStamp.setPosition(el.position.x, el.position.y);
-					layout.stamp(toStamp, cast(el.position.x, Int), cast(el.position.y, Int));
-					toStamp.kill();
+		// 			var toStamp = new FlxSprite(0, 0);
+		// 			toStamp = toStamp.makeGraphic(32, 32, 0xff660707);
+		// 			toStamp.setPosition(el.position.x, el.position.y);
+		// 			add(toStamp);
+		// 			layout.stamp(toStamp, cast(el.position.x, Int), cast(el.position.y, Int));
+		// 			// toStamp.kill();
 
-					trace(deadGroup.countLiving());
-					trace(el.position.x, '|||', el.position.y);
-				}
+		// 			trace(deadGroup.countLiving());
+		// 			trace(el.position.x, '|||', el.position.y);
+		// 		}
 
-				// var deadSprite = new FlxNapeSprite();
-				// deadSprite.makeGraphic(64, 64, FlxColor.GREEN);
-				// // deadSprite.loadGraphic('assets/images/blood.png');
+		// 		// var deadSprite = new FlxNapeSprite();
+		// 		// deadSprite.makeGraphic(64, 64, FlxColor.GREEN);
+		// 		// // deadSprite.loadGraphic('assets/images/blood.png');
 				
-				// deadSprite.antialiasing = true;
-				// deadSprite.setPosition(el.position.x, el.position.y);
-				// deadSprite.setPosition(shooter.collidesSpr.x, shooter.collidesSpr.y);
+		// 		// deadSprite.antialiasing = true;
+		// 		// deadSprite.setPosition(el.position.x, el.position.y);
+		// 		// deadSprite.setPosition(shooter.collidesSpr.x, shooter.collidesSpr.y);
 				
 				
-				// toStamp.destroy();
-				// add(deadSprite);
-				// deadSprite.body.space = null;
-				// deadSprite.body.velocity = new Vec2(0,0);
-			});
-		}
+		// 		// toStamp.destroy();
+		// 		// add(deadSprite);
+		// 		// deadSprite.body.space = null;
+		// 		// deadSprite.body.velocity = new Vec2(0,0);
+		// 	});
+		// }
 
 		super.update(elapsed);
 	}

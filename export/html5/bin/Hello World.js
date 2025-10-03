@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "7";
+	app.meta.h["build"] = "8";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -5319,7 +5319,6 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this.terrain.invalidate(region,this);
 	}
 	,update: function(elapsed) {
-		var _gthis = this;
 		var x = flixel_FlxG.mouse.getPosition().x;
 		var y = flixel_FlxG.mouse.getPosition().x;
 		if(y == null) {
@@ -5680,183 +5679,6 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		var _this = flixel_FlxG.mouse._leftButton;
 		var tmp = (_this.current == 1 || _this.current == 2) == true;
 		haxe_Log.trace(this.shooter.collides,{ fileName : "source/PlayState.hx", lineNumber : 246, className : "PlayState", methodName : "update"});
-		if(this.shooter.collides) {
-			var possiblyCollided = flixel_addons_nape_FlxNapeSpace.space.bodiesInCircle(new nape_geom_Vec2(this.shooter.collidesSpr.getPosition().x,this.shooter.collidesSpr.getPosition().y),96);
-			possiblyCollided.zpp_inner.valmod();
-			var it = nape_phys_BodyIterator.get(possiblyCollided);
-			while(true) {
-				it.zpp_inner.zpp_inner.valmod();
-				var _this = it.zpp_inner;
-				_this.zpp_inner.valmod();
-				if(_this.zpp_inner.zip_length) {
-					_this.zpp_inner.zip_length = false;
-					_this.zpp_inner.user_length = _this.zpp_inner.inner.length;
-				}
-				var length = _this.zpp_inner.user_length;
-				it.zpp_critical = true;
-				var tmp;
-				if(it.zpp_i < length) {
-					tmp = true;
-				} else {
-					it.zpp_next = nape_phys_BodyIterator.zpp_pool;
-					nape_phys_BodyIterator.zpp_pool = it;
-					it.zpp_inner = null;
-					tmp = false;
-				}
-				if(!tmp) {
-					break;
-				}
-				try {
-					it.zpp_critical = false;
-					var el = it.zpp_inner.at(it.zpp_i++);
-					if(el != _gthis.box.body && el != _gthis.walls) {
-						var space = null;
-						el.zpp_inner.immutable_midstep("Body::space");
-						if((el.zpp_inner.space == null ? null : el.zpp_inner.space.outer) != space) {
-							if((el.zpp_inner.space == null ? null : el.zpp_inner.space.outer) != null) {
-								el.zpp_inner.component.woken = false;
-							}
-							if((el.zpp_inner.space == null ? null : el.zpp_inner.space.outer) != null) {
-								(el.zpp_inner.space == null ? null : el.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(el);
-							}
-							if(space != null) {
-								var _this1 = space.zpp_inner.wrap_bodies;
-								if(_this1.zpp_inner.reverse_flag) {
-									_this1.push(el);
-								} else {
-									_this1.unshift(el);
-								}
-							}
-						}
-						var tmp1 = el.zpp_inner.space == null;
-						var velocity = new nape_geom_Vec2(0,0);
-						if(el.zpp_inner.wrap_vel == null) {
-							el.zpp_inner.setupVelocity();
-						}
-						var _this2 = el.zpp_inner.wrap_vel;
-						var _this3 = velocity.zpp_inner;
-						if(_this3._validate != null) {
-							_this3._validate();
-						}
-						var x = velocity.zpp_inner.x;
-						var _this4 = velocity.zpp_inner;
-						if(_this4._validate != null) {
-							_this4._validate();
-						}
-						var y = velocity.zpp_inner.y;
-						var tmp2;
-						var _this5 = _this2.zpp_inner;
-						if(_this5._validate != null) {
-							_this5._validate();
-						}
-						if(_this2.zpp_inner.x == x) {
-							var _this6 = _this2.zpp_inner;
-							if(_this6._validate != null) {
-								_this6._validate();
-							}
-							tmp2 = _this2.zpp_inner.y == y;
-						} else {
-							tmp2 = false;
-						}
-						if(!tmp2) {
-							_this2.zpp_inner.x = x;
-							_this2.zpp_inner.y = y;
-							var _this7 = _this2.zpp_inner;
-							if(_this7._invalidate != null) {
-								_this7._invalidate(_this7);
-							}
-						}
-						var ret = _this2;
-						if(velocity.zpp_inner.weak) {
-							var inner = velocity.zpp_inner;
-							velocity.zpp_inner.outer = null;
-							velocity.zpp_inner = null;
-							var o = velocity;
-							o.zpp_pool = zpp_$nape_util_ZPP_$PubPool.poolVec2;
-							zpp_$nape_util_ZPP_$PubPool.poolVec2 = o;
-							var o1 = inner;
-							if(o1.outer != null) {
-								o1.outer.zpp_inner = null;
-								o1.outer = null;
-							}
-							o1._isimmutable = null;
-							o1._validate = null;
-							o1._invalidate = null;
-							o1.next = zpp_$nape_geom_ZPP_$Vec2.zpp_pool;
-							zpp_$nape_geom_ZPP_$Vec2.zpp_pool = o1;
-						}
-						if(el.zpp_inner.wrap_vel == null) {
-							el.zpp_inner.setupVelocity();
-						}
-						var toStamp = _gthis.deadGroup.getFirstAlive();
-						if(el.zpp_inner.wrap_pos == null) {
-							el.zpp_inner.setupPosition();
-						}
-						var _this8 = el.zpp_inner.wrap_pos;
-						var _this9 = _this8.zpp_inner;
-						if(_this9._validate != null) {
-							_this9._validate();
-						}
-						var tmp3 = _this8.zpp_inner.x;
-						if(el.zpp_inner.wrap_pos == null) {
-							el.zpp_inner.setupPosition();
-						}
-						var _this10 = el.zpp_inner.wrap_pos;
-						var _this11 = _this10.zpp_inner;
-						if(_this11._validate != null) {
-							_this11._validate();
-						}
-						toStamp.setPosition(tmp3,_this10.zpp_inner.y);
-						var _gthis1 = _gthis.layout;
-						if(el.zpp_inner.wrap_pos == null) {
-							el.zpp_inner.setupPosition();
-						}
-						var _this12 = el.zpp_inner.wrap_pos;
-						var _this13 = _this12.zpp_inner;
-						if(_this13._validate != null) {
-							_this13._validate();
-						}
-						var tmp4 = js_Boot.__cast(_this12.zpp_inner.x , Int);
-						if(el.zpp_inner.wrap_pos == null) {
-							el.zpp_inner.setupPosition();
-						}
-						var _this14 = el.zpp_inner.wrap_pos;
-						var _this15 = _this14.zpp_inner;
-						if(_this15._validate != null) {
-							_this15._validate();
-						}
-						_gthis1.stamp(toStamp,tmp4,js_Boot.__cast(_this14.zpp_inner.y , Int));
-						toStamp.kill();
-						haxe_Log.trace(_gthis.deadGroup.countLiving(),{ fileName : "source/PlayState.hx", lineNumber : 263, className : "PlayState", methodName : "update"});
-						var tmp5 = haxe_Log.trace;
-						if(el.zpp_inner.wrap_pos == null) {
-							el.zpp_inner.setupPosition();
-						}
-						var _this16 = el.zpp_inner.wrap_pos;
-						var _this17 = _this16.zpp_inner;
-						if(_this17._validate != null) {
-							_this17._validate();
-						}
-						var tmp6 = _this16.zpp_inner.x;
-						if(el.zpp_inner.wrap_pos == null) {
-							el.zpp_inner.setupPosition();
-						}
-						var _this18 = el.zpp_inner.wrap_pos;
-						var _this19 = _this18.zpp_inner;
-						if(_this19._validate != null) {
-							_this19._validate();
-						}
-						tmp5(tmp6,{ fileName : "source/PlayState.hx", lineNumber : 264, className : "PlayState", methodName : "update", customParams : ["|||",_this18.zpp_inner.y]});
-					}
-				} catch( _g ) {
-					haxe_NativeStackTrace.lastError = _g;
-					it.zpp_next = nape_phys_BodyIterator.zpp_pool;
-					nape_phys_BodyIterator.zpp_pool = it;
-					it.zpp_inner = null;
-					break;
-				}
-			}
-		}
 		flixel_FlxState.prototype.update.call(this,elapsed);
 	}
 	,__class__: PlayState
@@ -6072,7 +5894,7 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 				_this.zpp_inner.setupPosition();
 			}
 			var _this1 = _this.zpp_inner.wrap_pos;
-			var y = 64 + this.box.getPosition().y;
+			var y = this.box.getPosition().y;
 			var _this = _this1.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
@@ -6093,7 +5915,7 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 				_this.zpp_inner.setupPosition();
 			}
 			var _this1 = _this.zpp_inner.wrap_pos;
-			var x = 64 + this.box.getPosition().x;
+			var x = this.box.getPosition().x;
 			var _this = _this1.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
@@ -6109,55 +5931,311 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			if(_this._validate != null) {
 				_this._validate();
 			}
+			var tmp = flixel_FlxG.mouse.x;
+			var _this = spr.body;
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
+			}
+			var _this1 = _this.zpp_inner.wrap_pos;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(tmp >= _this1.zpp_inner.x) {
+				var tmp = flixel_FlxG.mouse.y;
+				var _this = spr.body;
+				if(_this.zpp_inner.wrap_pos == null) {
+					_this.zpp_inner.setupPosition();
+				}
+				var _this1 = _this.zpp_inner.wrap_pos;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(tmp >= _this1.zpp_inner.y) {
+					var _this = spr.body;
+					if(_this.zpp_inner.wrap_pos == null) {
+						_this.zpp_inner.setupPosition();
+					}
+					var fh = _this.zpp_inner.wrap_pos;
+					var _this = fh.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					var x = fh.zpp_inner.x + 20;
+					var _this = fh.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					if(fh.zpp_inner.x != x) {
+						fh.zpp_inner.x = x;
+						var _this = fh.zpp_inner;
+						if(_this._invalidate != null) {
+							_this._invalidate(_this);
+						}
+					}
+					var _this = fh.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					var _this = spr.body;
+					if(_this.zpp_inner.wrap_pos == null) {
+						_this.zpp_inner.setupPosition();
+					}
+					var fh = _this.zpp_inner.wrap_pos;
+					var _this = fh.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					var y = fh.zpp_inner.y + 20;
+					var _this = fh.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					if(fh.zpp_inner.y != y) {
+						fh.zpp_inner.y = y;
+						var _this = fh.zpp_inner;
+						if(_this._invalidate != null) {
+							_this._invalidate(_this);
+						}
+					}
+					var _this = fh.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+				} else {
+					var tmp = flixel_FlxG.mouse.y;
+					var _this = spr.body;
+					if(_this.zpp_inner.wrap_pos == null) {
+						_this.zpp_inner.setupPosition();
+					}
+					var _this1 = _this.zpp_inner.wrap_pos;
+					var _this = _this1.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					if(tmp < _this1.zpp_inner.y) {
+						var _this = spr.body;
+						if(_this.zpp_inner.wrap_pos == null) {
+							_this.zpp_inner.setupPosition();
+						}
+						var fh = _this.zpp_inner.wrap_pos;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						var x = fh.zpp_inner.x + 20;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						if(fh.zpp_inner.x != x) {
+							fh.zpp_inner.x = x;
+							var _this = fh.zpp_inner;
+							if(_this._invalidate != null) {
+								_this._invalidate(_this);
+							}
+						}
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						var _this = spr.body;
+						if(_this.zpp_inner.wrap_pos == null) {
+							_this.zpp_inner.setupPosition();
+						}
+						var fh = _this.zpp_inner.wrap_pos;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						var y = fh.zpp_inner.y - 20;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						if(fh.zpp_inner.y != y) {
+							fh.zpp_inner.y = y;
+							var _this = fh.zpp_inner;
+							if(_this._invalidate != null) {
+								_this._invalidate(_this);
+							}
+						}
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+					}
+				}
+			} else {
+				var tmp = flixel_FlxG.mouse.x;
+				var _this = spr.body;
+				if(_this.zpp_inner.wrap_pos == null) {
+					_this.zpp_inner.setupPosition();
+				}
+				var _this1 = _this.zpp_inner.wrap_pos;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(tmp < _this1.zpp_inner.x) {
+					var tmp = flixel_FlxG.mouse.y;
+					var _this = spr.body;
+					if(_this.zpp_inner.wrap_pos == null) {
+						_this.zpp_inner.setupPosition();
+					}
+					var _this1 = _this.zpp_inner.wrap_pos;
+					var _this = _this1.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					if(tmp >= _this1.zpp_inner.y) {
+						var _this = spr.body;
+						if(_this.zpp_inner.wrap_pos == null) {
+							_this.zpp_inner.setupPosition();
+						}
+						var fh = _this.zpp_inner.wrap_pos;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						var x = fh.zpp_inner.x - 20;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						if(fh.zpp_inner.x != x) {
+							fh.zpp_inner.x = x;
+							var _this = fh.zpp_inner;
+							if(_this._invalidate != null) {
+								_this._invalidate(_this);
+							}
+						}
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						var _this = spr.body;
+						if(_this.zpp_inner.wrap_pos == null) {
+							_this.zpp_inner.setupPosition();
+						}
+						var fh = _this.zpp_inner.wrap_pos;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						var y = fh.zpp_inner.y + 20;
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						if(fh.zpp_inner.y != y) {
+							fh.zpp_inner.y = y;
+							var _this = fh.zpp_inner;
+							if(_this._invalidate != null) {
+								_this._invalidate(_this);
+							}
+						}
+						var _this = fh.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+					} else {
+						var tmp = flixel_FlxG.mouse.y;
+						var _this = spr.body;
+						if(_this.zpp_inner.wrap_pos == null) {
+							_this.zpp_inner.setupPosition();
+						}
+						var _this1 = _this.zpp_inner.wrap_pos;
+						var _this = _this1.zpp_inner;
+						if(_this._validate != null) {
+							_this._validate();
+						}
+						if(tmp < _this1.zpp_inner.y) {
+							var _this = spr.body;
+							if(_this.zpp_inner.wrap_pos == null) {
+								_this.zpp_inner.setupPosition();
+							}
+							var fh = _this.zpp_inner.wrap_pos;
+							var _this = fh.zpp_inner;
+							if(_this._validate != null) {
+								_this._validate();
+							}
+							var x = fh.zpp_inner.x - 20;
+							var _this = fh.zpp_inner;
+							if(_this._validate != null) {
+								_this._validate();
+							}
+							if(fh.zpp_inner.x != x) {
+								fh.zpp_inner.x = x;
+								var _this = fh.zpp_inner;
+								if(_this._invalidate != null) {
+									_this._invalidate(_this);
+								}
+							}
+							var _this = fh.zpp_inner;
+							if(_this._validate != null) {
+								_this._validate();
+							}
+							var _this = spr.body;
+							if(_this.zpp_inner.wrap_pos == null) {
+								_this.zpp_inner.setupPosition();
+							}
+							var fh = _this.zpp_inner.wrap_pos;
+							var _this = fh.zpp_inner;
+							if(_this._validate != null) {
+								_this._validate();
+							}
+							var y = fh.zpp_inner.y - 20;
+							var _this = fh.zpp_inner;
+							if(_this._validate != null) {
+								_this._validate();
+							}
+							if(fh.zpp_inner.y != y) {
+								fh.zpp_inner.y = y;
+								var _this = fh.zpp_inner;
+								if(_this._invalidate != null) {
+									_this._invalidate(_this);
+								}
+							}
+							var _this = fh.zpp_inner;
+							if(_this._validate != null) {
+								_this._validate();
+							}
+						}
+					}
+				}
+			}
 			var _this = spr.body;
 			if(_this.zpp_inner.wrap_vel == null) {
 				_this.zpp_inner.setupVelocity();
 			}
 			var _this1 = _this.zpp_inner.wrap_vel;
 			var x = flixel_FlxG.mouse.x;
-			var _this = spr.body;
-			if(_this.zpp_inner.wrap_pos == null) {
-				_this.zpp_inner.setupPosition();
-			}
-			var _this2 = _this.zpp_inner.wrap_pos;
-			var _this = _this2.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var x1 = x - _this2.zpp_inner.x;
 			var y = flixel_FlxG.mouse.y;
-			var _this = spr.body;
-			if(_this.zpp_inner.wrap_pos == null) {
-				_this.zpp_inner.setupPosition();
-			}
-			var _this2 = _this.zpp_inner.wrap_pos;
-			var _this = _this2.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var y1 = y - _this2.zpp_inner.y;
 			var tmp;
 			var _this = _this1.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			if(_this1.zpp_inner.x == x1) {
+			if(_this1.zpp_inner.x == x) {
 				var _this = _this1.zpp_inner;
 				if(_this._validate != null) {
 					_this._validate();
 				}
-				tmp = _this1.zpp_inner.y == y1;
+				tmp = _this1.zpp_inner.y == y;
 			} else {
 				tmp = false;
 			}
 			if(!tmp) {
-				_this1.zpp_inner.x = x1;
-				_this1.zpp_inner.y = y1;
+				_this1.zpp_inner.x = x;
+				_this1.zpp_inner.y = y;
 				var _this = _this1.zpp_inner;
 				if(_this._invalidate != null) {
 					_this._invalidate(_this);
 				}
 			}
+			var velocity = _this1;
 			var _this = spr.body;
 			if(_this.zpp_inner.wrap_vel == null) {
 				_this.zpp_inner.setupVelocity();
@@ -6254,7 +6332,7 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 		var spr = this.getFirstAlive();
 		if(spr != null) {
 			this.collidesSpr = spr;
-			haxe_Log.trace("spr",{ fileName : "source/Shooter.hx", lineNumber : 109, className : "Shooter", methodName : "onBulletCollides", customParams : [spr]});
+			haxe_Log.trace("spr",{ fileName : "source/Shooter.hx", lineNumber : 138, className : "Shooter", methodName : "onBulletCollides", customParams : [spr]});
 			spr.kill();
 		}
 		this.collides = true;
@@ -80524,7 +80602,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 156316;
+	this.version = 467615;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";

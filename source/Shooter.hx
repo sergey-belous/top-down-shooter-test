@@ -85,12 +85,41 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 
 		if (box != null) {
-			spr.body.position.y = 64 + box.getPosition().y;
-			spr.body.position.x = 64 + box.getPosition().x;
+			spr.body.position.y = box.getPosition().y;
+			spr.body.position.x = box.getPosition().x;
+
+			if (FlxG.mouse.x >= spr.body.position.x)
+			{
+				if (FlxG.mouse.y >= spr.body.position.y)
+				{
+					spr.body.position.x += 20;
+					spr.body.position.y += 20;
+				}
+				else if (FlxG.mouse.y < spr.body.position.y)
+				{
+					spr.body.position.x += 20;
+					spr.body.position.y -= 20;
+				}
+			}
+			else if (FlxG.mouse.x < spr.body.position.x)
+			{
+				if (FlxG.mouse.y >= spr.body.position.y)
+				{
+					spr.body.position.x -= 20;
+					spr.body.position.y += 20;
+				}
+				else if (FlxG.mouse.y < spr.body.position.y)
+				{
+					spr.body.position.x -= 20;
+					spr.body.position.y -= 20;
+				}
+			}
+
 			// var toTrace = spr.body.worldPointToLocal(new Vec2(FlxG.mouse.x, FlxG.mouse.y), true);
 			// spr.body.velocity.setxy(toTrace.x, toTrace.y);
-			spr.body.velocity.setxy(FlxG.mouse.x - spr.body.position.x, FlxG.mouse.y - spr.body.position.y);
+			var velocity = spr.body.velocity.setxy(FlxG.mouse.x, FlxG.mouse.y);
 			spr.body.velocity.length = impulse;
+
 		} else {
 			// spr.body.position.y = FlxG.mouse.y;
 			// spr.body.position.x = FlxG.mouse.x;
