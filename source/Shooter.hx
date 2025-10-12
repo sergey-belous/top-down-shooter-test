@@ -77,57 +77,54 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 		if (disableShooting)
 			return;
 
-		
-
 		var spr = recycle(FlxNapeSprite);
 		var trail = new Trail(spr).start(false, FlxG.elapsed);
 		FlxG.state.add(trail);
 
+		if (box != null)
+		{
+			// Получаем центр спрайта игрока (позиция + половина размеров)
+			var playerCenterX:Float = box.getPosition().x + box.width / 2;
+			var playerCenterY:Float = box.getPosition().y + box.height / 2;
+		
+			// Получаем центр мыши (учитываем, что координаты мыши уже в мировых координатах)
+			var mouseX:Float = FlxG.mouse.x;
+			var mouseY:Float = FlxG.mouse.y;
 
-		if (box != null) {
-			spr.body.position.y = box.getPosition().y;
-			spr.body.position.x = box.getPosition().x;
+			// Вычисляем вектор направления от центра игрока к мыши
+			var directionX:Float = mouseX - playerCenterX;
+			var directionY:Float = mouseY - playerCenterY;
 
-			if (FlxG.mouse.x >= spr.body.position.x)
+			// Нормализуем вектор направления
+			var length:Float = Math.sqrt(directionX * directionX + directionY * directionY);
+			if (length > 0)
 			{
-				if (FlxG.mouse.y >= spr.body.position.y)
-				{
-					spr.body.position.x += 20;
-					spr.body.position.y += 20;
-				}
-				else if (FlxG.mouse.y < spr.body.position.y)
-				{
-					spr.body.position.x += 20;
-					spr.body.position.y -= 20;
-				}
+				directionX /= length;
+				directionY /= length;
 			}
-			else if (FlxG.mouse.x < spr.body.position.x)
-			{
-				if (FlxG.mouse.y >= spr.body.position.y)
-				{
-					spr.body.position.x -= 20;
-					spr.body.position.y += 20;
-				}
-				else if (FlxG.mouse.y < spr.body.position.y)
-				{
-					spr.body.position.x -= 20;
-					spr.body.position.y -= 20;
-				}
-			}
+			// Задаем расстояние от центра игрока для появления снаряда
+			var spawnDistance:Float = 40; // Расстояние от центра игрока
 
-			// var toTrace = spr.body.worldPointToLocal(new Vec2(FlxG.mouse.x, FlxG.mouse.y), true);
-			// spr.body.velocity.setxy(toTrace.x, toTrace.y);
-			var velocity = spr.body.velocity.setxy(FlxG.mouse.x, FlxG.mouse.y);
-			spr.body.velocity.length = impulse;
+			// Вычисляем центр снаряда
+			var projectileCenterX:Float = playerCenterX + directionX * spawnDistance;
+			var projectileCenterY:Float = playerCenterY + directionY * spawnDistance;
 
-		} else {
-			// spr.body.position.y = FlxG.mouse.y;
-			// spr.body.position.x = FlxG.mouse.x;
-			// spr.body.velocity.setxy(-100, 0);
-			// spr.body.velocity.length = impulse;
+			// Переводим центр снаряда в координаты верхнего левого угла
+			// (вычитаем половину размеров снаряда)
+			spr.body.position.x = projectileCenterX - spr.width / 2;
+			spr.body.position.y = projectileCenterY - spr.height / 2;
+
+			// Задаем скорость в направлении мыши
+			// Используем нормализованный вектор направления и умножаем на импульс
+			spr.body.velocity.x = directionX * impulse;
+			spr.body.velocity.y = directionY * impulse;
+		
+			trace('Player center: ($playerCenterX, $playerCenterY)');
+			trace('Mouse: ($mouseX, $mouseY)');
+			trace('Projectile spawn: (${spr.body.position.x}, ${spr.body.position.y})');
+			trace('Direction: ($directionX, $directionY)');
+			trace('Velocity: (${spr.body.velocity.x}, ${spr.body.velocity.y})');
 		}
-
-		// spr.body.angularVel = 30;
 	}
 
 	public function onBulletCollides(clbk:InteractionCallback)
