@@ -70,7 +70,7 @@ class PlayState extends FlxState
 	public var deadGroup:FlxTypedGroup<FlxSprite>;
 	public var maxNumber:Int;
 
-	public var levels:Int = 65;
+	public var levels:Int = 40;
 	public var bricks:Array<FlxNapeSprite>; 
 	public var brickHealthBars:Array<HealthBar>; // Массив для хранения полосок здоровья
 	public var shooter:Shooter;
