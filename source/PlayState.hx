@@ -36,20 +36,20 @@ class HealthBar extends FlxSprite
 		var healthRatio:Float = currentHealth / maxHealth;
 		var barWidth:Int = Math.round(32 * healthRatio);
 
-		makeGraphic(32, 4, FlxColor.GREEN);
+		var sprite = makeGraphic(32, 4, FlxColor.GREEN);
 
-		// if (healthRatio > 0.6)
-		// {
-		// 	fill(FlxColor.GREEN);
-		// }
-		// else if (healthRatio > 0.3)
-		// {
-		// 	fill(FlxColor.YELLOW);
-		// }
-		// else
-		// {
-		// 	fill(FlxColor.RED);
-		// }
+		if (healthRatio > 0.6)
+		{
+			sprite.makeGraphic(32, 4, FlxColor.GREEN);
+		}
+		else if (healthRatio > 0.3)
+		{
+			sprite.makeGraphic(32, 4, FlxColor.YELLOW);
+		}
+		else
+		{
+			sprite.makeGraphic(32, 4, FlxColor.RED);
+		}
 
 		// Позиционируем над родительским блоком
 		setPosition(parentBrick.x, parentBrick.y - 8);
@@ -70,7 +70,7 @@ class PlayState extends FlxState
 	public var deadGroup:FlxTypedGroup<FlxSprite>;
 	public var maxNumber:Int;
 
-	public var levels:Int = 20;
+	public var levels:Int = 40;
 	public var bricks:Array<FlxNapeSprite>; 
 	public var brickHealthBars:Array<HealthBar>; // Массив для хранения полосок здоровья
 	public var shooter:Shooter;
@@ -94,7 +94,7 @@ class PlayState extends FlxState
 
 	override public function create()
 	{
-		brickHeight = 32;
+		brickHeight = 16;
 		brickWidth = brickHeight;
 
 		super.create();
@@ -328,19 +328,19 @@ class PlayState extends FlxState
 
 		// Управление с клавиатуры - устанавливаем скорость напрямую
 		if(FlxG.keys.pressed.W) {
-			box.body.velocity.y = -200;
+			box.body.position.y -= 5;
 			isSlowingDown = false; // Отменяем замедление при новом вводе
 		}
 		if(FlxG.keys.pressed.S) {
-			box.body.velocity.y = 200;
+			box.body.position.y += 5;
 			isSlowingDown = false;
 		}
 		if(FlxG.keys.pressed.A) {
-			box.body.velocity.x = -200;
+			box.body.position.x -= 5;
 			isSlowingDown = false;
 		}
 		if(FlxG.keys.pressed.D) {
-			box.body.velocity.x = 200;
+			box.body.position.x += 5;
 			isSlowingDown = false;
 		}
 

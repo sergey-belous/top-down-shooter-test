@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "9";
+	app.meta.h["build"] = "10";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -7575,7 +7575,14 @@ HealthBar.prototype = $extend(flixel_FlxSprite.prototype,{
 	,updateHealthBar: function() {
 		var healthRatio = this.currentHealth / this.maxHealth;
 		var barWidth = Math.round(32 * healthRatio);
-		this.makeGraphic(32,4,-16744448);
+		var sprite = this.makeGraphic(32,4,-16744448);
+		if(healthRatio > 0.6) {
+			sprite.makeGraphic(32,4,-16744448);
+		} else if(healthRatio > 0.3) {
+			sprite.makeGraphic(32,4,-256);
+		} else {
+			sprite.makeGraphic(32,4,-65536);
+		}
 		this.setPosition(this.parentBrick.x,this.parentBrick.y - 8);
 	}
 	,__class__: HealthBar
@@ -8337,7 +8344,7 @@ var PlayState = function() {
 	this.isSlowingDown = false;
 	this.playerMinSpeed = 10;
 	this.playerDeceleration = 500;
-	this.levels = 20;
+	this.levels = 40;
 	flixel_FlxState.call(this);
 };
 $hxClasses["PlayState"] = PlayState;
@@ -8371,7 +8378,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	,isRotating: null
 	,isRotationSlowing: null
 	,create: function() {
-		this.brickHeight = 32;
+		this.brickHeight = 16;
 		this.brickWidth = this.brickHeight;
 		flixel_FlxState.prototype.create.call(this);
 		this.set_bgColor(-391160);
@@ -8891,22 +8898,27 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		var _this = flixel_FlxG.keys.pressed;
 		if(_this.keyManager.checkStatusUnsafe(87,_this.status)) {
 			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
 			}
-			var _this1 = _this.zpp_inner.wrap_vel;
-			var _this = _this1.zpp_inner;
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			if(_this1.zpp_inner.y != -200) {
-				_this1.zpp_inner.y = -200;
-				var _this = _this1.zpp_inner;
+			var y = fh.zpp_inner.y - 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.y != y) {
+				fh.zpp_inner.y = y;
+				var _this = fh.zpp_inner;
 				if(_this._invalidate != null) {
 					_this._invalidate(_this);
 				}
 			}
-			var _this = _this1.zpp_inner;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
@@ -8915,22 +8927,27 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		var _this = flixel_FlxG.keys.pressed;
 		if(_this.keyManager.checkStatusUnsafe(83,_this.status)) {
 			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
 			}
-			var _this1 = _this.zpp_inner.wrap_vel;
-			var _this = _this1.zpp_inner;
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			if(_this1.zpp_inner.y != 200) {
-				_this1.zpp_inner.y = 200;
-				var _this = _this1.zpp_inner;
+			var y = fh.zpp_inner.y + 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.y != y) {
+				fh.zpp_inner.y = y;
+				var _this = fh.zpp_inner;
 				if(_this._invalidate != null) {
 					_this._invalidate(_this);
 				}
 			}
-			var _this = _this1.zpp_inner;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
@@ -8939,22 +8956,27 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		var _this = flixel_FlxG.keys.pressed;
 		if(_this.keyManager.checkStatusUnsafe(65,_this.status)) {
 			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
 			}
-			var _this1 = _this.zpp_inner.wrap_vel;
-			var _this = _this1.zpp_inner;
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			if(_this1.zpp_inner.x != -200) {
-				_this1.zpp_inner.x = -200;
-				var _this = _this1.zpp_inner;
+			var x = fh.zpp_inner.x - 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.x != x) {
+				fh.zpp_inner.x = x;
+				var _this = fh.zpp_inner;
 				if(_this._invalidate != null) {
 					_this._invalidate(_this);
 				}
 			}
-			var _this = _this1.zpp_inner;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
@@ -8963,22 +8985,27 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		var _this = flixel_FlxG.keys.pressed;
 		if(_this.keyManager.checkStatusUnsafe(68,_this.status)) {
 			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
 			}
-			var _this1 = _this.zpp_inner.wrap_vel;
-			var _this = _this1.zpp_inner;
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			if(_this1.zpp_inner.x != 200) {
-				_this1.zpp_inner.x = 200;
-				var _this = _this1.zpp_inner;
+			var x = fh.zpp_inner.x + 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.x != x) {
+				fh.zpp_inner.x = x;
+				var _this = fh.zpp_inner;
 				if(_this._invalidate != null) {
 					_this._invalidate(_this);
 				}
 			}
-			var _this = _this1.zpp_inner;
+			var _this = fh.zpp_inner;
 			if(_this._validate != null) {
 				_this._validate();
 			}
@@ -80422,7 +80449,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 934825;
+	this.version = 181305;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
