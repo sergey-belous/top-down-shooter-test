@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "12";
+	app.meta.h["build"] = "13";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -8344,7 +8344,7 @@ var PlayState = function() {
 	this.isSlowingDown = false;
 	this.playerMinSpeed = 10;
 	this.playerDeceleration = 500;
-	this.levels = 40;
+	this.levels = 30;
 	flixel_FlxState.call(this);
 };
 $hxClasses["PlayState"] = PlayState;
@@ -80449,7 +80449,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 665685;
+	this.version = 74369;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
