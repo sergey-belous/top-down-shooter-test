@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "17";
+	app.meta.h["build"] = "18";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -8338,6 +8338,11 @@ flixel_FlxState.prototype = $extend(flixel_group_FlxTypedContainer.prototype,{
 var PlayState = function() {
 	this.isRotationSlowing = false;
 	this.isRotating = false;
+	this.rotationSnapSpeed = 0.1;
+	this.rotationSnapAngle = 2 * Math.PI / 180;
+	this.rotationMaxSpeed = 8.0;
+	this.rotationKd = 4.0;
+	this.rotationKp = 12.0;
 	this.rotationMinSpeed = 5;
 	this.rotationDeceleration = 120;
 	this.rotationSpeed = 180;
@@ -8375,6 +8380,11 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	,rotationSpeed: null
 	,rotationDeceleration: null
 	,rotationMinSpeed: null
+	,rotationKp: null
+	,rotationKd: null
+	,rotationMaxSpeed: null
+	,rotationSnapAngle: null
+	,rotationSnapSpeed: null
 	,isRotating: null
 	,isRotationSlowing: null
 	,create: function() {
@@ -8636,8 +8646,8 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		brick.destroy();
 		healthBar.destroy();
 	}
-	,applyDeceleration: function(elapsed) {
-		var _this = this.box.body;
+	,applyDeceleration: function(elapsed,box) {
+		var _this = box.body;
 		if(_this.zpp_inner.wrap_vel == null) {
 			_this.zpp_inner.setupVelocity();
 		}
@@ -8665,7 +8675,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		if(currentSpeed2 > this.playerMinSpeed) {
 			var newSpeed = currentSpeed2 - this.playerDeceleration * elapsed;
 			if(newSpeed <= this.playerMinSpeed) {
-				var _this = this.box.body;
+				var _this = box.body;
 				if(_this.zpp_inner.wrap_vel == null) {
 					_this.zpp_inner.setupVelocity();
 				}
@@ -8695,7 +8705,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 				this.isSlowingDown = false;
 			} else {
 				var normalizedVel = currentVelocity.normalise();
-				var _this = this.box.body;
+				var _this = box.body;
 				if(_this.zpp_inner.wrap_vel == null) {
 					_this.zpp_inner.setupVelocity();
 				}
@@ -8720,7 +8730,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 				if(_this._validate != null) {
 					_this._validate();
 				}
-				var _this = this.box.body;
+				var _this = box.body;
 				if(_this.zpp_inner.wrap_vel == null) {
 					_this.zpp_inner.setupVelocity();
 				}
@@ -8747,7 +8757,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 				}
 			}
 		} else {
-			var _this = this.box.body;
+			var _this = box.body;
 			if(_this.zpp_inner.wrap_vel == null) {
 				_this.zpp_inner.setupVelocity();
 			}
@@ -8777,36 +8787,51 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			this.isSlowingDown = false;
 		}
 	}
-	,applyRotationDeceleration: function(elapsed) {
-		var currentAngularVel = this.box.body.zpp_inner.angvel;
-		var currentSpeed = Math.abs(currentAngularVel) * 180 / Math.PI;
-		if(currentSpeed > this.rotationMinSpeed) {
-			var newSpeed = currentSpeed - this.rotationDeceleration * elapsed;
-			if(newSpeed <= this.rotationMinSpeed) {
-				var _this = this.box.body;
-				if(_this.zpp_inner.angvel != 0) {
-					_this.zpp_inner.angvel = 0;
-					_this.zpp_inner.wake();
+	,applyRotationDeceleration: function(elapsed,box) {
+		var currentAngularVel = box.body.zpp_inner.angvel;
+		var currentRotation = box.body.zpp_inner.rot;
+		var angleError = -currentRotation;
+		angleError = Math.atan2(Math.sin(angleError),Math.cos(angleError));
+		var desiredAngularAcc = this.rotationKp * angleError - this.rotationKd * currentAngularVel;
+		var newAngularVel = currentAngularVel + desiredAngularAcc * elapsed;
+		if(newAngularVel > this.rotationMaxSpeed) {
+			newAngularVel = this.rotationMaxSpeed;
+		} else if(newAngularVel < -this.rotationMaxSpeed) {
+			newAngularVel = -this.rotationMaxSpeed;
+		}
+		if(Math.abs(angleError) <= this.rotationSnapAngle && Math.abs(newAngularVel) <= this.rotationSnapSpeed) {
+			var _this = box.body;
+			_this.zpp_inner.immutable_midstep("Body::rotation");
+			if(_this.zpp_inner.rot != 0) {
+				_this.zpp_inner.rot = 0;
+				var _this1 = _this.zpp_inner;
+				_this1.zip_axis = true;
+				var cx_ite = _this1.shapes.head;
+				while(cx_ite != null) {
+					var s = cx_ite.elt;
+					if(s.type == 1) {
+						s.polygon.invalidate_gverts();
+						s.polygon.invalidate_gaxi();
+					}
+					s.invalidate_worldCOM();
+					cx_ite = cx_ite.next;
 				}
-				this.isRotationSlowing = false;
-				this.isRotating = false;
-			} else {
-				var direction = currentAngularVel > 0 ? 1 : -1;
-				var _this = this.box.body;
-				var angularVel = direction * newSpeed * Math.PI / 180;
-				if(_this.zpp_inner.angvel != angularVel) {
-					_this.zpp_inner.angvel = angularVel;
-					_this.zpp_inner.wake();
-				}
+				_this1.zip_worldCOM = true;
+				_this.zpp_inner.wake();
 			}
-		} else {
-			var _this = this.box.body;
+			var _this = box.body;
 			if(_this.zpp_inner.angvel != 0) {
 				_this.zpp_inner.angvel = 0;
 				_this.zpp_inner.wake();
 			}
 			this.isRotationSlowing = false;
 			this.isRotating = false;
+		} else {
+			var _this = box.body;
+			if(_this.zpp_inner.angvel != newAngularVel) {
+				_this.zpp_inner.angvel = newAngularVel;
+				_this.zpp_inner.wake();
+			}
 		}
 	}
 	,update: function(elapsed) {
@@ -9063,9 +9088,23 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			}
 		}
 		if(this.isSlowingDown) {
-			this.applyDeceleration(elapsed);
+			this.applyDeceleration(elapsed,this.box);
+			var _g = 0;
+			var _g1 = this.bricks;
+			while(_g < _g1.length) {
+				var brick = _g1[_g];
+				++_g;
+				this.applyDeceleration(elapsed,brick);
+			}
 		}
-		this.applyRotationDeceleration(elapsed);
+		this.applyRotationDeceleration(elapsed,this.box);
+		var _g = 0;
+		var _g1 = this.bricks;
+		while(_g < _g1.length) {
+			var brick = _g1[_g];
+			++_g;
+			this.applyRotationDeceleration(elapsed,brick);
+		}
 		var _g = 0;
 		var _g1 = this.brickHealthBars;
 		while(_g < _g1.length) {
@@ -80449,7 +80488,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 446049;
+	this.version = 63806;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";

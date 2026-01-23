@@ -89,6 +89,11 @@ class PlayState extends FlxState
 	public var rotationSpeed:Float = 180; // Скорость вращения (градусов/сек)
 	public var rotationDeceleration:Float = 120; // Замедление вращения (градусов/сек²)
 	public var rotationMinSpeed:Float = 5; // Минимальная скорость вращения
+	public var rotationKp:Float = 12.0; // Усиление для возврата к вертикали (рад/с² на рад)
+	public var rotationKd:Float = 4.0; // Демпфирование угловой скорости (рад/с² на рад/с)
+	public var rotationMaxSpeed:Float = 8.0; // Ограничение угловой скорости (рад/с)
+	public var rotationSnapAngle:Float = 2 * Math.PI / 180; // Порог защёлки (рад)
+	public var rotationSnapSpeed:Float = 0.1; // Порог угловой скорости (рад/с)
 	public var isRotating:Bool = false; // Флаг активного вращения
 	public var isRotationSlowing:Bool = false;
 
@@ -163,7 +168,7 @@ class PlayState extends FlxState
 		}
 	}
 
-	function createBricks()
+	function createBricks():Void
 	{
 		bricks = new Array<FlxNapeSprite>();
 		brickHealthBars = new Array<HealthBar>(); // Инициализируем массив полосок здоровья
@@ -255,7 +260,7 @@ class PlayState extends FlxState
 		healthBar.destroy();
 	}
 
-	private function applyDeceleration(elapsed:Float):Void
+	private function applyDeceleration(elapsed:Float, box:FlxNapeSprite):Void
 	{
 		var currentVelocity:Vec2 = box.body.velocity;
 		var currentSpeed:Float = currentVelocity.length;
@@ -287,36 +292,39 @@ class PlayState extends FlxState
 		}
 	}
 
-	private function applyRotationDeceleration(elapsed:Float):Void
+	private function applyRotationDeceleration(elapsed:Float, box:FlxNapeSprite):Void
 	{
-		var currentAngularVel:Float = box.body.angularVel;
-		var currentSpeed:Float = Math.abs(currentAngularVel) * 180 / Math.PI; // Переводим в градусы/сек
+		var currentAngularVel:Float = box.body.angularVel; // рад/с
+		var currentRotation:Float = box.body.rotation; // рад
 
-		if (currentSpeed > rotationMinSpeed)
+		// Ошибка до вертикального положения (0 рад), нормализуем в [-PI, PI]
+		var angleError:Float = -currentRotation;
+		angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
+
+		// PD-контроллер: тянем к нулю с демпфированием
+		var desiredAngularAcc:Float = rotationKp * angleError - rotationKd * currentAngularVel;
+		var newAngularVel:Float = currentAngularVel + desiredAngularAcc * elapsed;
+
+		if (newAngularVel > rotationMaxSpeed)
 		{
-			// Вычисляем новую скорость с учетом замедления
-			var newSpeed:Float = currentSpeed - rotationDeceleration * elapsed;
-
-			if (newSpeed <= rotationMinSpeed)
-			{
-				// Полная остановка вращения
-				box.body.angularVel = 0;
-				isRotationSlowing = false;
-				isRotating = false;
-			}
-			else
-			{
-				// Сохраняем направление вращения, но уменьшаем скорость
-				var direction:Float = currentAngularVel > 0 ? 1 : -1;
-				box.body.angularVel = direction * newSpeed * Math.PI / 180;
-			}
+			newAngularVel = rotationMaxSpeed;
 		}
-		else
+		else if (newAngularVel < -rotationMaxSpeed)
 		{
-			// Полная остановка вращения
+			newAngularVel = -rotationMaxSpeed;
+		}
+
+		// Защёлка при достижении близости к вертикали
+		if (Math.abs(angleError) <= rotationSnapAngle && Math.abs(newAngularVel) <= rotationSnapSpeed)
+		{
+			box.body.rotation = 0;
 			box.body.angularVel = 0;
 			isRotationSlowing = false;
 			isRotating = false;
+		}
+		else
+		{
+			box.body.angularVel = newAngularVel;
 		}
 	}
 
@@ -356,10 +364,18 @@ class PlayState extends FlxState
 		// Применяем замедление если оно активно
 		if (isSlowingDown)
 		{
-			applyDeceleration(elapsed);
+			applyDeceleration(elapsed, box);
+			for (brick in bricks)
+			{
+				applyDeceleration(elapsed, brick);
+			}
 		}
 
-		applyRotationDeceleration(elapsed);
+		applyRotationDeceleration(elapsed, box);
+		for (brick in bricks)
+		{
+			applyRotationDeceleration(elapsed, brick);
+		}
 
 		// Обновляем позиции полосок здоровья
 		for (healthBar in brickHealthBars)
