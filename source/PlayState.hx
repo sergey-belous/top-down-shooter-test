@@ -31,7 +31,7 @@ class PlayState extends FlxState
 	public var deadGroup:FlxTypedGroup<FlxSprite>;
 	public var maxNumber:Int;
 
-	public var levels:Int = 40;
+	public var levels:Int = 10;
 	public var bricks:Array<Enemy>;
 	public var shooter:Shooter;
 	public var handJoint:PivotJoint;
@@ -45,7 +45,7 @@ class PlayState extends FlxState
 	override public function create()
 	{
 
-		brickHeight = 16;
+		brickHeight = 64;
 		brickWidth = brickHeight;
 
 		super.create();
@@ -62,22 +62,22 @@ class PlayState extends FlxState
 
 		FlxNapeSpace.init();
 
-		var w:Int = FlxG.width;
-		var h:Int = FlxG.height;
+		// var w:Int = FlxG.width;
+		// var h:Int = FlxG.height;
 
-		// Initialise terrain bitmap.
-		#if flash
-		var bit = new BitmapData(w, h, true, 0x00000000);
-		bit.perlinNoise(200, 200, 2, 0x3ed, false, true, BitmapDataChannel.ALPHA, false);
-		#else
-		var bit = Assets.getBitmapData("assets/images/terrain.png");
-		#end
+		// // Initialise terrain bitmap.
+		// #if flash
+		// var bit = new BitmapData(w, h, true, 0x00000000);
+		// bit.perlinNoise(200, 200, 2, 0x3ed, false, true, BitmapDataChannel.ALPHA, false);
+		// #else
+		// var bit = Assets.getBitmapData("assets/images/terrain.png");
+		// #end
 
-		// Create initial terrain state, invalidating the whole screen.
-		terrain = new Terrain(bit, 30, 5);
-		terrain.invalidate(new AABB(0, 0, w, h), this);
+		// // Create initial terrain state, invalidating the whole screen.
+		// terrain = new Terrain(bit, 30, 5);
+		// terrain.invalidate(new AABB(0, 0, w, h), this);
 
-		add(terrain.sprite);
+		// add(terrain.sprite);
 
 		shooter = new Shooter();
 		add(shooter);
@@ -89,7 +89,7 @@ class PlayState extends FlxState
 
 		lazer = new FlxWeapon("lazer", box, "x", "y");
  		
-		surrounding = new Character(32, 32, 48, 48, FlxColor.MAGENTA);
+		surrounding = new Character(64, 64, 48, 48, FlxColor.MAGENTA);
 		add(surrounding);
 
 		lazer.makePixelBullet(50, 5, 5);
@@ -228,9 +228,11 @@ class PlayState extends FlxState
 		}
 
 		box.applyRotationDeceleration(elapsed);
+		box.updateMovementAnimation();
 		for (brick in bricks)
 		{
 			brick.applyRotationDeceleration(elapsed);
+			brick.updateMovementAnimation();
 		}
 
 		// Обновляем позиции полосок здоровья

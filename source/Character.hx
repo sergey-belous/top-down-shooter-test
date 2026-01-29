@@ -67,6 +67,7 @@ class Character extends FlxNapeSprite
 	public var rotationMaxSpeed:Float = 8.0; // Ограничение угловой скорости (рад/с)
 	public var rotationSnapAngle:Float = 2 * Math.PI / 180; // Порог защёлки (рад)
 	public var rotationSnapSpeed:Float = 0.1; // Порог угловой скорости (рад/с)
+	public var direction = 1;
 
 	public function new(width:Int, height:Int, xPos:Float, yPos:Float, color:FlxColor, angularVel:Float = 0, withHealthBar:Bool = false)
 	{
@@ -77,8 +78,6 @@ class Character extends FlxNapeSprite
 		body.angularVel = angularVel;
 		scale.x = 1;
 		scale.y = 1;
-		flipX = FlxG.random.bool();
-		flipY = FlxG.random.bool();
 		setBodyMaterial(.5, .5, .5, 2);
 		body.position.y = yPos;
 		body.position.x = xPos;
@@ -182,11 +181,35 @@ class Character extends FlxNapeSprite
 		if (Math.abs(angleError) <= rotationSnapAngle && Math.abs(newAngularVel) <= rotationSnapSpeed)
 		{
 			body.rotation = 0;
-			body.angularVel = 0;
+			body.angularVel = 0;		
 		}
 		else
 		{
 			body.angularVel = newAngularVel;
+		}
+	}
+	public function updateMovementAnimation():Void
+	{
+		if (body.velocity.length > 0 && body.velocity.x < 0)
+		{
+			direction = 1;
+			animation.play('moveRight');
+		}
+		else if (body.velocity.length > 0 && body.velocity.x > 0)
+		{
+			animation.play('moveLeft');
+			direction = -1;
+		}
+		else if (body.velocity.length == 0)
+		{
+			if (direction == 1)
+			{
+				animation.play('idleRight');
+			}
+			else if (direction == -1)
+			{
+				animation.play('idleLeft');
+			}
 		}
 	}
 }

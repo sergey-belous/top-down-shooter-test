@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "19";
+	app.meta.h["build"] = "20";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -10541,6 +10541,7 @@ var Character = function(width,height,xPos,yPos,color,angularVel,withHealthBar) 
 	if(angularVel == null) {
 		angularVel = 0;
 	}
+	this.direction = 1;
 	this.rotationSnapSpeed = 0.1;
 	this.rotationSnapAngle = 2 * Math.PI / 180;
 	this.rotationMaxSpeed = 8.0;
@@ -10562,8 +10563,6 @@ var Character = function(width,height,xPos,yPos,color,angularVel,withHealthBar) 
 	}
 	this.scale.set_x(1);
 	this.scale.set_y(1);
-	this.set_flipX(flixel_FlxG.random.float(0,100) < 50);
-	this.set_flipY(flixel_FlxG.random.float(0,100) < 50);
 	this.setBodyMaterial(.5,.5,.5,2);
 	var _this = this.body;
 	if(_this.zpp_inner.wrap_pos == null) {
@@ -10626,6 +10625,7 @@ Character.prototype = $extend(flixel_addons_nape_FlxNapeSprite.prototype,{
 	,rotationMaxSpeed: null
 	,rotationSnapAngle: null
 	,rotationSnapSpeed: null
+	,direction: null
 	,applyDamage: function(damage) {
 		this.currentHealth -= damage;
 		if(this.healthBar != null) {
@@ -10841,6 +10841,127 @@ Character.prototype = $extend(flixel_addons_nape_FlxNapeSprite.prototype,{
 			}
 		}
 	}
+	,updateMovementAnimation: function() {
+		var tmp;
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_vel == null) {
+			_this.zpp_inner.setupVelocity();
+		}
+		var _this1 = _this.zpp_inner.wrap_vel;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp1 = _this1.zpp_inner.x;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp2 = tmp1 * _this1.zpp_inner.x;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp1 = _this1.zpp_inner.y;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		if(Math.sqrt(tmp2 + tmp1 * _this1.zpp_inner.y) > 0) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			tmp = _this1.zpp_inner.x < 0;
+		} else {
+			tmp = false;
+		}
+		if(tmp) {
+			this.direction = 1;
+			this.animation.play("moveRight");
+		} else {
+			var tmp;
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp1 = _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp2 = tmp1 * _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp1 = _this1.zpp_inner.y;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(Math.sqrt(tmp2 + tmp1 * _this1.zpp_inner.y) > 0) {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				tmp = _this1.zpp_inner.x > 0;
+			} else {
+				tmp = false;
+			}
+			if(tmp) {
+				this.animation.play("moveLeft");
+				this.direction = -1;
+			} else {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp = _this1.zpp_inner.x;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp1 = tmp * _this1.zpp_inner.x;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp = _this1.zpp_inner.y;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(Math.sqrt(tmp1 + tmp * _this1.zpp_inner.y) == 0) {
+					if(this.direction == 1) {
+						this.animation.play("idleRight");
+					} else if(this.direction == -1) {
+						this.animation.play("idleLeft");
+					}
+				}
+			}
+		}
+	}
 	,__class__: Character
 });
 var EReg = function(r,opt) {
@@ -10933,12 +11054,140 @@ EReg.prototype = {
 var Enemy = function(width,height,xPos,yPos) {
 	Character.call(this,width,height,xPos,yPos,-7650029,10,true);
 	this.setCollision(512,-1,Character.CB_TARGET);
+	this.loadGraphic("assets/images/chaos-marine-sprite-sheet.png",true,250,250);
+	this.animation.add("moveRight",[0,1,2],12,true);
+	this.animation.add("moveLeft",[0,1,2],12,false);
+	this.animation.add("idleRight",[0],1,true);
+	this.animation.add("idleLeft",[0],1,false);
+	this.setGraphicSize(64,64);
+	this.updateHitbox();
 };
 $hxClasses["Enemy"] = Enemy;
 Enemy.__name__ = "Enemy";
 Enemy.__super__ = Character;
 Enemy.prototype = $extend(Character.prototype,{
-	__class__: Enemy
+	updateMovementAnimation: function() {
+		var tmp;
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_vel == null) {
+			_this.zpp_inner.setupVelocity();
+		}
+		var _this1 = _this.zpp_inner.wrap_vel;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp1 = _this1.zpp_inner.x;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp2 = tmp1 * _this1.zpp_inner.x;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp1 = _this1.zpp_inner.y;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		if(Math.sqrt(tmp2 + tmp1 * _this1.zpp_inner.y) > 5) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			tmp = _this1.zpp_inner.x > 0;
+		} else {
+			tmp = false;
+		}
+		if(tmp) {
+			this.direction = 1;
+			this.animation.play("moveRight");
+		} else {
+			var tmp;
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp1 = _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp2 = tmp1 * _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp1 = _this1.zpp_inner.y;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(Math.sqrt(tmp2 + tmp1 * _this1.zpp_inner.y) > 5) {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				tmp = _this1.zpp_inner.x < 0;
+			} else {
+				tmp = false;
+			}
+			if(tmp) {
+				this.animation.play("moveLeft");
+				this.direction = -1;
+			} else {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp = _this1.zpp_inner.x;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp1 = tmp * _this1.zpp_inner.x;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp = _this1.zpp_inner.y;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(Math.sqrt(tmp1 + tmp * _this1.zpp_inner.y) == 5) {
+					if(this.direction == 1) {
+						this.animation.play("idleRight");
+					} else if(this.direction == -1) {
+						this.animation.play("idleLeft");
+					}
+				}
+			}
+		}
+	}
+	,__class__: Enemy
 });
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
@@ -12160,7 +12409,7 @@ flixel_FlxState.prototype = $extend(flixel_group_FlxTypedContainer.prototype,{
 	,__properties__: $extend(flixel_group_FlxTypedContainer.prototype.__properties__,{get_subStateClosed:"get_subStateClosed",get_subStateOpened:"get_subStateOpened",set_bgColor:"set_bgColor",get_bgColor:"get_bgColor"})
 });
 var PlayState = function() {
-	this.levels = 40;
+	this.levels = 10;
 	flixel_FlxState.call(this);
 };
 $hxClasses["PlayState"] = PlayState;
@@ -12185,7 +12434,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	,layout: null
 	,stampedBricks: null
 	,create: function() {
-		this.brickHeight = 16;
+		this.brickHeight = 64;
 		this.brickWidth = this.brickHeight;
 		flixel_FlxState.prototype.create.call(this);
 		this.set_bgColor(-391160);
@@ -12195,19 +12444,13 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this.stampedBricks = new flixel_group_FlxTypedGroup();
 		this.add(this.stampedBricks);
 		flixel_addons_nape_FlxNapeSpace.init();
-		var w = flixel_FlxG.width;
-		var h = flixel_FlxG.height;
-		var bit = openfl_utils_Assets.getBitmapData("assets/images/terrain.png");
-		this.terrain = new Terrain(bit,30,5);
-		this.terrain.invalidate(new nape_geom_AABB(0,0,w,h),this);
-		this.add(this.terrain.sprite);
 		this.shooter = new Shooter();
 		this.add(this.shooter);
 		this.walls = flixel_addons_nape_FlxNapeSpace.createWalls(0,0,640,480,10);
 		this.box = new Player(32,32,48,48);
 		this.add(this.box);
 		this.lazer = new photonstorm_FlxWeapon("lazer",this.box,"x","y");
-		this.surrounding = new Character(32,32,48,48,-65281);
+		this.surrounding = new Character(64,64,48,48,-65281);
 		this.add(this.surrounding);
 		this.lazer.makePixelBullet(50,5,5);
 		this.lazer.setBulletSpeed(100);
@@ -12375,12 +12618,14 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			}
 		}
 		this.box.applyRotationDeceleration(elapsed);
+		this.box.updateMovementAnimation();
 		var _g = 0;
 		var _g1 = this.bricks;
 		while(_g < _g1.length) {
 			var brick = _g1[_g];
 			++_g;
 			brick.applyRotationDeceleration(elapsed);
+			brick.updateMovementAnimation();
 		}
 		var _g = 0;
 		var _g1 = this.bricks;
@@ -12450,6 +12695,13 @@ var Player = function(width,height,xPos,yPos) {
 	this.isSlowingDown = false;
 	Character.call(this,width,height,xPos,yPos,-65281,0,false);
 	this.setCollision(256,-1,Character.CB_PLAYER);
+	this.loadGraphic("assets/images/space-marine-sprite-sheet.png",true,250,250);
+	this.animation.add("moveRight",[0,1,2],12,true,false);
+	this.animation.add("moveLeft",[0,1,2],12,true,true);
+	this.animation.add("idleRight",[0],1,false,false);
+	this.animation.add("idleLeft",[0],1,false,true);
+	this.setGraphicSize(64,64);
+	this.updateHitbox();
 };
 $hxClasses["Player"] = Player;
 Player.__name__ = "Player";
@@ -12628,6 +12880,141 @@ Player.prototype = $extend(Character.prototype,{
 	,applyDecelerationIfNeeded: function(elapsed) {
 		if(this.isSlowingDown) {
 			this.applyDeceleration(elapsed);
+		}
+	}
+	,updateMovementAnimation: function() {
+		var tmp;
+		var tmp1;
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_vel == null) {
+			_this.zpp_inner.setupVelocity();
+		}
+		var _this1 = _this.zpp_inner.wrap_vel;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp2 = _this1.zpp_inner.x;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp3 = tmp2 * _this1.zpp_inner.x;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var tmp2 = _this1.zpp_inner.y;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		if(Math.sqrt(tmp3 + tmp2 * _this1.zpp_inner.y) > 0) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			tmp1 = _this1.zpp_inner.x > 0;
+		} else {
+			tmp1 = false;
+		}
+		if(!tmp1) {
+			var _this = flixel_FlxG.keys.pressed;
+			tmp = _this.keyManager.checkStatusUnsafe(68,_this.status);
+		} else {
+			tmp = true;
+		}
+		if(tmp) {
+			this.direction = 1;
+			this.animation.play("moveRight");
+		} else {
+			var tmp;
+			var tmp1;
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp2 = _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp3 = tmp2 * _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp2 = _this1.zpp_inner.y;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(Math.sqrt(tmp3 + tmp2 * _this1.zpp_inner.y) > 0) {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				tmp1 = _this1.zpp_inner.x < 0;
+			} else {
+				tmp1 = false;
+			}
+			if(!tmp1) {
+				var _this = flixel_FlxG.keys.pressed;
+				tmp = _this.keyManager.checkStatusUnsafe(65,_this.status);
+			} else {
+				tmp = true;
+			}
+			if(tmp) {
+				this.animation.play("moveLeft");
+				this.direction = -1;
+			} else {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp = _this1.zpp_inner.x;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp1 = tmp * _this1.zpp_inner.x;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var tmp = _this1.zpp_inner.y;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(Math.sqrt(tmp1 + tmp * _this1.zpp_inner.y) == 0) {
+					if(this.direction == 1) {
+						this.animation.play("idleRight");
+					} else if(this.direction == -1) {
+						this.animation.play("idleLeft");
+					}
+				}
+			}
 		}
 	}
 	,__class__: Player
@@ -83497,7 +83884,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 914088;
+	this.version = 528424;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
