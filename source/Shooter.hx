@@ -1,5 +1,6 @@
 package;
 
+import Character;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.nape.FlxNapeSpace;
@@ -64,12 +65,12 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 			spr.setBodyMaterial(0, .2, .4, 20);
 			spr.body.cbTypes.add(CB_BULLET);
 			spr.body.isBullet = true;
-			spr.body.setShapeFilters(new InteractionFilter(256, ~256));
+			spr.body.setShapeFilters(new InteractionFilter(Character.GROUP_BULLET, Character.MASK_ALL & ~Character.GROUP_PLAYER));
 			spr.kill();
 			add(spr);
 		}
 
-		FlxNapeSpace.space.listeners.add(new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CB_BULLET, CbType.ANY_BODY, onBulletCollides));
+		FlxNapeSpace.space.listeners.add(new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CB_BULLET, Character.CB_TARGET, onBulletCollides));
 	}
 
 	function launchProjectile(spr:FlxSprite)
@@ -103,7 +104,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 				directionY /= length;
 			}
 			// Задаем расстояние от центра игрока для появления снаряда
-			var spawnDistance:Float = 40; // Расстояние от центра игрока
+			var spawnDistance:Float = 36; // Расстояние от центра игрока
 
 			// Вычисляем центр снаряда
 			var projectileCenterX:Float = playerCenterX + directionX * spawnDistance;

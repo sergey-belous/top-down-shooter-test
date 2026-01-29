@@ -75,7 +75,7 @@ import sys.FileSystem;
 
 		var data, manifest, library, bundle;
 
-		data = '{"name":null,"assets":"aoy4:sizei39706y4:typey5:MUSICy2:idy28:flixel%2Fsounds%2Fflixel.mp3y9:pathGroupaR4y28:flixel%2Fsounds%2Fflixel.ogghy7:preloadtgoR0i8220R1R2R3y26:flixel%2Fsounds%2Fbeep.mp3R5aR8y26:flixel%2Fsounds%2Fbeep.ogghR7tgoR0i33629R1y5:SOUNDR3R6R5aR4R6hgoR0i6840R1R10R3R9R5aR8R9hgoR0i15744R1y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR3y30:flixel%2Ffonts%2Fnokiafc22.ttfR7tgoR0i29724R1R11R12y36:__ASSET__flixel_fonts_monsterrat_ttfR3y31:flixel%2Ffonts%2Fmonsterrat.ttfR7tgoy4:pathy33:flixel%2Fimages%2Fui%2Fbutton.pngR0i277R1y5:IMAGER3R18R7tgoR17y36:flixel%2Fimages%2Flogo%2Fdefault.pngR0i505R1R19R3R20R7tgoR17y42:flixel%2Fimages%2Ftransitions%2Fsquare.pngR0i209R1R19R3R21R7tgoR17y53:flixel%2Fimages%2Ftransitions%2Fdiagonal_gradient.pngR0i730R1R19R3R22R7tgoR17y42:flixel%2Fimages%2Ftransitions%2Fcircle.pngR0i299R1R19R3R23R7tgoR17y43:flixel%2Fimages%2Ftransitions%2Fdiamond.pngR0i236R1R19R3R24R7tgh","rootPath":null,"version":2,"libraryArgs":[],"libraryType":null}';
+		data = '{"name":null,"assets":"aoy4:pathy27:assets%2Fimages%2Fblood.pngy4:sizei8203y4:typey5:IMAGEy2:idR1y7:preloadtgoR0y33:assets%2Fimages%2FPatagonia30.jpgR2i1334R3R4R5R7R6tgoR0y26:assets%2Fimages%2Fwall.pngR2i5753R3R4R5R8R6tgoR0y36:assets%2Fimages%2Fimages-go-here.txtR2zR3y4:TEXTR5R9R6tgoR0y32:assets%2Fimages%2Fsoldier.png%7ER2i274R3y6:BINARYR5R11R6tgoR0y47:assets%2Fimages%2Fchaos-marine-sprite-sheet.pngR2i246689R3R4R5R13R6tgoR0y29:assets%2Fimages%2Fterrain.pngR2i129353R3R4R5R14R6tgoR0y26:assets%2Fimages%2Ftest.pngR2i87056R3R4R5R15R6tgoR0y30:assets%2Fimages%2Fblood.png%7ER2i5054R3R12R5R16R6tgoR0y29:assets%2Fimages%2Fsoldier.pngR2i308R3R4R5R17R6tgoR0y29:assets%2Fimages%2Ftest.png%7ER2i73026R3R12R5R18R6tgoR0y47:assets%2Fimages%2Fspace-marine-sprite-sheet.pngR2i302727R3R4R5R19R6tgoR0y36:assets%2Fsounds%2Fsounds-go-here.txtR2zR3R10R5R20R6tgoR0y34:assets%2Fdata%2Fdata-goes-here.txtR2zR3R10R5R21R6tgoR0y36:assets%2Fmusic%2Fmusic-goes-here.txtR2zR3R10R5R22R6tgoR2i39706R3y5:MUSICR5y28:flixel%2Fsounds%2Fflixel.mp3y9:pathGroupaR24y28:flixel%2Fsounds%2Fflixel.ogghR6tgoR2i8220R3R23R5y26:flixel%2Fsounds%2Fbeep.mp3R25aR27y26:flixel%2Fsounds%2Fbeep.ogghR6tgoR2i33629R3y5:SOUNDR5R26R25aR24R26hgoR2i6840R3R29R5R28R25aR27R28hgoR2i15744R3y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR5y30:flixel%2Ffonts%2Fnokiafc22.ttfR6tgoR2i29724R3R30R31y36:__ASSET__flixel_fonts_monsterrat_ttfR5y31:flixel%2Ffonts%2Fmonsterrat.ttfR6tgoR0y33:flixel%2Fimages%2Fui%2Fbutton.pngR2i277R3R4R5R36R6tgoR0y36:flixel%2Fimages%2Flogo%2Fdefault.pngR2i505R3R4R5R37R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fsquare.pngR2i209R3R4R5R38R6tgoR0y53:flixel%2Fimages%2Ftransitions%2Fdiagonal_gradient.pngR2i730R3R4R5R39R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fcircle.pngR2i299R3R4R5R40R6tgoR0y43:flixel%2Fimages%2Ftransitions%2Fdiamond.pngR2i236R3R4R5R41R6tgh","rootPath":null,"version":2,"libraryArgs":[],"libraryType":null}';
 		manifest = AssetManifest.parse (data, rootPath);
 		library = AssetLibrary.fromManifest (manifest);
 		Assets.registerLibrary ("default", library);
@@ -94,6 +94,21 @@ import sys.FileSystem;
 #if !display
 #if flash
 
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_blood_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_patagonia30_jpg extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_wall_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_images_go_here_txt extends null { }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_soldier_png_ extends null { }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_chaos_marine_sprite_sheet_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_terrain_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_test_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_blood_png_ extends null { }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_soldier_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_test_png_ extends null { }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_images_space_marine_sprite_sheet_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_sounds_sounds_go_here_txt extends null { }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_data_data_goes_here_txt extends null { }
+@:keep @:bind @:noCompletion #if display private #end class __ASSET__assets_music_music_goes_here_txt extends null { }
 @:keep @:bind @:noCompletion #if display private #end class __ASSET__flixel_sounds_flixel_mp3 extends null { }
 @:keep @:bind @:noCompletion #if display private #end class __ASSET__flixel_sounds_beep_mp3 extends null { }
 @:keep @:bind @:noCompletion #if display private #end class __ASSET__flixel_sounds_flixel_ogg extends null { }
@@ -111,6 +126,21 @@ import sys.FileSystem;
 
 #elseif (desktop || cpp)
 
+@:keep @:image("assets/images/blood.png") @:noCompletion #if display private #end class __ASSET__assets_images_blood_png extends lime.graphics.Image {}
+@:keep @:image("assets/images/Patagonia30.jpg") @:noCompletion #if display private #end class __ASSET__assets_images_patagonia30_jpg extends lime.graphics.Image {}
+@:keep @:image("assets/images/wall.png") @:noCompletion #if display private #end class __ASSET__assets_images_wall_png extends lime.graphics.Image {}
+@:keep @:file("assets/images/images-go-here.txt") @:noCompletion #if display private #end class __ASSET__assets_images_images_go_here_txt extends haxe.io.Bytes {}
+@:keep @:file("assets/images/soldier.png~") @:noCompletion #if display private #end class __ASSET__assets_images_soldier_png_ extends haxe.io.Bytes {}
+@:keep @:image("assets/images/chaos-marine-sprite-sheet.png") @:noCompletion #if display private #end class __ASSET__assets_images_chaos_marine_sprite_sheet_png extends lime.graphics.Image {}
+@:keep @:image("assets/images/terrain.png") @:noCompletion #if display private #end class __ASSET__assets_images_terrain_png extends lime.graphics.Image {}
+@:keep @:image("assets/images/test.png") @:noCompletion #if display private #end class __ASSET__assets_images_test_png extends lime.graphics.Image {}
+@:keep @:file("assets/images/blood.png~") @:noCompletion #if display private #end class __ASSET__assets_images_blood_png_ extends haxe.io.Bytes {}
+@:keep @:image("assets/images/soldier.png") @:noCompletion #if display private #end class __ASSET__assets_images_soldier_png extends lime.graphics.Image {}
+@:keep @:file("assets/images/test.png~") @:noCompletion #if display private #end class __ASSET__assets_images_test_png_ extends haxe.io.Bytes {}
+@:keep @:image("assets/images/space-marine-sprite-sheet.png") @:noCompletion #if display private #end class __ASSET__assets_images_space_marine_sprite_sheet_png extends lime.graphics.Image {}
+@:keep @:file("assets/sounds/sounds-go-here.txt") @:noCompletion #if display private #end class __ASSET__assets_sounds_sounds_go_here_txt extends haxe.io.Bytes {}
+@:keep @:file("assets/data/data-goes-here.txt") @:noCompletion #if display private #end class __ASSET__assets_data_data_goes_here_txt extends haxe.io.Bytes {}
+@:keep @:file("assets/music/music-goes-here.txt") @:noCompletion #if display private #end class __ASSET__assets_music_music_goes_here_txt extends haxe.io.Bytes {}
 @:keep @:file("/home/sj/haxelib/flixel/5,8,0/assets/sounds/flixel.mp3") @:noCompletion #if display private #end class __ASSET__flixel_sounds_flixel_mp3 extends haxe.io.Bytes {}
 @:keep @:file("/home/sj/haxelib/flixel/5,8,0/assets/sounds/beep.mp3") @:noCompletion #if display private #end class __ASSET__flixel_sounds_beep_mp3 extends haxe.io.Bytes {}
 @:keep @:file("/home/sj/haxelib/flixel/5,8,0/assets/sounds/flixel.ogg") @:noCompletion #if display private #end class __ASSET__flixel_sounds_flixel_ogg extends haxe.io.Bytes {}

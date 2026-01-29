@@ -14,6 +14,8 @@
 -D flixel-addons=3.3.0
 -cp /home/sj/haxelib/nape-haxe4/2,0,22
 -D nape-haxe4=2.0.22
+-cp /home/sj/haxelib/poly2trihx/0,1,4
+-D poly2trihx=0.1.4
 -cp source
 -D ANDROID_SETUP=true
 -D message.reporting=pretty

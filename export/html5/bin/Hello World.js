@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "18";
+	app.meta.h["build"] = "19";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -3574,564 +3574,6 @@ DocumentClass.__super__ = Main;
 DocumentClass.prototype = $extend(Main.prototype,{
 	__class__: DocumentClass
 });
-var EReg = function(r,opt) {
-	this.r = new RegExp(r,opt.split("u").join(""));
-};
-$hxClasses["EReg"] = EReg;
-EReg.__name__ = "EReg";
-EReg.prototype = {
-	r: null
-	,match: function(s) {
-		if(this.r.global) {
-			this.r.lastIndex = 0;
-		}
-		this.r.m = this.r.exec(s);
-		this.r.s = s;
-		return this.r.m != null;
-	}
-	,matched: function(n) {
-		if(this.r.m != null && n >= 0 && n < this.r.m.length) {
-			return this.r.m[n];
-		} else {
-			throw haxe_Exception.thrown("EReg::matched");
-		}
-	}
-	,matchedRight: function() {
-		if(this.r.m == null) {
-			throw haxe_Exception.thrown("No string matched");
-		}
-		var sz = this.r.m.index + this.r.m[0].length;
-		return HxOverrides.substr(this.r.s,sz,this.r.s.length - sz);
-	}
-	,matchedPos: function() {
-		if(this.r.m == null) {
-			throw haxe_Exception.thrown("No string matched");
-		}
-		return { pos : this.r.m.index, len : this.r.m[0].length};
-	}
-	,matchSub: function(s,pos,len) {
-		if(len == null) {
-			len = -1;
-		}
-		if(this.r.global) {
-			this.r.lastIndex = pos;
-			this.r.m = this.r.exec(len < 0 ? s : HxOverrides.substr(s,0,pos + len));
-			var b = this.r.m != null;
-			if(b) {
-				this.r.s = s;
-			}
-			return b;
-		} else {
-			var b = this.match(len < 0 ? HxOverrides.substr(s,pos,null) : HxOverrides.substr(s,pos,len));
-			if(b) {
-				this.r.s = s;
-				this.r.m.index += pos;
-			}
-			return b;
-		}
-	}
-	,split: function(s) {
-		var d = "#__delim__#";
-		return s.replace(this.r,d).split(d);
-	}
-	,map: function(s,f) {
-		var offset = 0;
-		var buf_b = "";
-		do {
-			if(offset >= s.length) {
-				break;
-			} else if(!this.matchSub(s,offset)) {
-				buf_b += Std.string(HxOverrides.substr(s,offset,null));
-				break;
-			}
-			var p = this.matchedPos();
-			buf_b += Std.string(HxOverrides.substr(s,offset,p.pos - offset));
-			buf_b += Std.string(f(this));
-			if(p.len == 0) {
-				buf_b += Std.string(HxOverrides.substr(s,p.pos,1));
-				offset = p.pos + 1;
-			} else {
-				offset = p.pos + p.len;
-			}
-		} while(this.r.global);
-		if(!this.r.global && offset > 0 && offset < s.length) {
-			buf_b += Std.string(HxOverrides.substr(s,offset,null));
-		}
-		return buf_b;
-	}
-	,__class__: EReg
-};
-var HxOverrides = function() { };
-$hxClasses["HxOverrides"] = HxOverrides;
-HxOverrides.__name__ = "HxOverrides";
-HxOverrides.strDate = function(s) {
-	switch(s.length) {
-	case 8:
-		var k = s.split(":");
-		var d = new Date();
-		d["setTime"](0);
-		d["setUTCHours"](k[0]);
-		d["setUTCMinutes"](k[1]);
-		d["setUTCSeconds"](k[2]);
-		return d;
-	case 10:
-		var k = s.split("-");
-		return new Date(k[0],k[1] - 1,k[2],0,0,0);
-	case 19:
-		var k = s.split(" ");
-		var y = k[0].split("-");
-		var t = k[1].split(":");
-		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
-	default:
-		throw haxe_Exception.thrown("Invalid date format : " + s);
-	}
-};
-HxOverrides.cca = function(s,index) {
-	var x = s.charCodeAt(index);
-	if(x != x) {
-		return undefined;
-	}
-	return x;
-};
-HxOverrides.substr = function(s,pos,len) {
-	if(len == null) {
-		len = s.length;
-	} else if(len < 0) {
-		if(pos == 0) {
-			len = s.length + len;
-		} else {
-			return "";
-		}
-	}
-	return s.substr(pos,len);
-};
-HxOverrides.remove = function(a,obj) {
-	var i = a.indexOf(obj);
-	if(i == -1) {
-		return false;
-	}
-	a.splice(i,1);
-	return true;
-};
-HxOverrides.now = function() {
-	return Date.now();
-};
-var IntIterator = function(min,max) {
-	this.min = min;
-	this.max = max;
-};
-$hxClasses["IntIterator"] = IntIterator;
-IntIterator.__name__ = "IntIterator";
-IntIterator.prototype = {
-	min: null
-	,max: null
-	,hasNext: function() {
-		return this.min < this.max;
-	}
-	,next: function() {
-		return this.min++;
-	}
-	,__class__: IntIterator
-};
-var Lambda = function() { };
-$hxClasses["Lambda"] = Lambda;
-Lambda.__name__ = "Lambda";
-Lambda.array = function(it) {
-	var a = [];
-	var i = $getIterator(it);
-	while(i.hasNext()) {
-		var i1 = i.next();
-		a.push(i1);
-	}
-	return a;
-};
-Lambda.count = function(it,pred) {
-	var n = 0;
-	if(pred == null) {
-		var _ = $getIterator(it);
-		while(_.hasNext()) {
-			var _1 = _.next();
-			++n;
-		}
-	} else {
-		var x = $getIterator(it);
-		while(x.hasNext()) {
-			var x1 = x.next();
-			if(pred(x1)) {
-				++n;
-			}
-		}
-	}
-	return n;
-};
-var ManifestResources = function() { };
-$hxClasses["ManifestResources"] = ManifestResources;
-ManifestResources.__name__ = "ManifestResources";
-ManifestResources.preloadLibraries = null;
-ManifestResources.preloadLibraryNames = null;
-ManifestResources.rootPath = null;
-ManifestResources.init = function(config) {
-	ManifestResources.preloadLibraries = [];
-	ManifestResources.preloadLibraryNames = [];
-	ManifestResources.rootPath = null;
-	if(config != null && Object.prototype.hasOwnProperty.call(config,"rootPath")) {
-		ManifestResources.rootPath = Reflect.field(config,"rootPath");
-		if(!StringTools.endsWith(ManifestResources.rootPath,"/")) {
-			ManifestResources.rootPath += "/";
-		}
-	}
-	if(ManifestResources.rootPath == null) {
-		ManifestResources.rootPath = "./";
-	}
-	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf);
-	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf);
-	var bundle;
-	var data = "{\"name\":null,\"assets\":\"aoy4:sizei39706y4:typey5:MUSICy2:idy28:flixel%2Fsounds%2Fflixel.mp3y9:pathGroupaR4y28:flixel%2Fsounds%2Fflixel.ogghy7:preloadtgoR0i8220R1R2R3y26:flixel%2Fsounds%2Fbeep.mp3R5aR8y26:flixel%2Fsounds%2Fbeep.ogghR7tgoR0i33629R1y5:SOUNDR3R6R5aR4R6hgoR0i6840R1R10R3R9R5aR8R9hgoR0i15744R1y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR3y30:flixel%2Ffonts%2Fnokiafc22.ttfR7tgoR0i29724R1R11R12y36:__ASSET__flixel_fonts_monsterrat_ttfR3y31:flixel%2Ffonts%2Fmonsterrat.ttfR7tgoy4:pathy33:flixel%2Fimages%2Fui%2Fbutton.pngR0i277R1y5:IMAGER3R18R7tgoR17y36:flixel%2Fimages%2Flogo%2Fdefault.pngR0i505R1R19R3R20R7tgoR17y42:flixel%2Fimages%2Ftransitions%2Fsquare.pngR0i209R1R19R3R21R7tgoR17y53:flixel%2Fimages%2Ftransitions%2Fdiagonal_gradient.pngR0i730R1R19R3R22R7tgoR17y42:flixel%2Fimages%2Ftransitions%2Fcircle.pngR0i299R1R19R3R23R7tgoR17y43:flixel%2Fimages%2Ftransitions%2Fdiamond.pngR0i236R1R19R3R24R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
-	var manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
-	var library = lime_utils_AssetLibrary.fromManifest(manifest);
-	lime_utils_Assets.registerLibrary("default",library);
-	library = lime_utils_Assets.getLibrary("default");
-	if(library != null) {
-		ManifestResources.preloadLibraries.push(library);
-	} else {
-		ManifestResources.preloadLibraryNames.push("default");
-	}
-};
-var lime_text_Font = function(name) {
-	if(name != null) {
-		this.name = name;
-	}
-	if(!this.__init) {
-		if(this.ascender == undefined) {
-			this.ascender = 0;
-		}
-		if(this.descender == undefined) {
-			this.descender = 0;
-		}
-		if(this.height == undefined) {
-			this.height = 0;
-		}
-		if(this.numGlyphs == undefined) {
-			this.numGlyphs = 0;
-		}
-		if(this.underlinePosition == undefined) {
-			this.underlinePosition = 0;
-		}
-		if(this.underlineThickness == undefined) {
-			this.underlineThickness = 0;
-		}
-		if(this.unitsPerEM == undefined) {
-			this.unitsPerEM = 0;
-		}
-		if(this.__fontID != null) {
-			if(lime_utils_Assets.isLocal(this.__fontID)) {
-				this.__fromBytes(lime_utils_Assets.getBytes(this.__fontID));
-			}
-		} else if(this.__fontPath != null) {
-			this.__fromFile(this.__fontPath);
-		}
-	}
-};
-$hxClasses["lime.text.Font"] = lime_text_Font;
-lime_text_Font.__name__ = "lime.text.Font";
-lime_text_Font.fromBytes = function(bytes) {
-	if(bytes == null) {
-		return null;
-	}
-	var font = new lime_text_Font();
-	font.__fromBytes(bytes);
-	return font;
-};
-lime_text_Font.fromFile = function(path) {
-	if(path == null) {
-		return null;
-	}
-	var font = new lime_text_Font();
-	font.__fromFile(path);
-	return font;
-};
-lime_text_Font.loadFromBytes = function(bytes) {
-	return lime_app_Future.withValue(lime_text_Font.fromBytes(bytes));
-};
-lime_text_Font.loadFromFile = function(path) {
-	var request = new lime_net__$HTTPRequest_$lime_$text_$Font();
-	return request.load(path).then(function(font) {
-		if(font != null) {
-			return lime_app_Future.withValue(font);
-		} else {
-			return lime_app_Future.withError("");
-		}
-	});
-};
-lime_text_Font.loadFromName = function(path) {
-	var font = new lime_text_Font();
-	return font.__loadFromName(path);
-};
-lime_text_Font.__measureFontNode = function(fontFamily) {
-	var node = window.document.createElement("span");
-	node.setAttribute("aria-hidden","true");
-	var text = window.document.createTextNode("BESbswy");
-	node.appendChild(text);
-	var style = node.style;
-	style.display = "block";
-	style.position = "absolute";
-	style.top = "-9999px";
-	style.left = "-9999px";
-	style.fontSize = "300px";
-	style.width = "auto";
-	style.height = "auto";
-	style.lineHeight = "normal";
-	style.margin = "0";
-	style.padding = "0";
-	style.fontVariant = "normal";
-	style.whiteSpace = "nowrap";
-	style.fontFamily = fontFamily;
-	window.document.body.appendChild(node);
-	return node;
-};
-lime_text_Font.prototype = {
-	ascender: null
-	,descender: null
-	,height: null
-	,name: null
-	,numGlyphs: null
-	,src: null
-	,underlinePosition: null
-	,underlineThickness: null
-	,unitsPerEM: null
-	,__fontID: null
-	,__fontPath: null
-	,__init: null
-	,decompose: function() {
-		return null;
-	}
-	,getGlyph: function(character) {
-		return -1;
-	}
-	,getGlyphs: function(characters) {
-		if(characters == null) {
-			characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^`'\"/\\&*()[]{}<>|:;_-+=?,. ";
-		}
-		return null;
-	}
-	,getGlyphMetrics: function(glyph) {
-		return null;
-	}
-	,renderGlyph: function(glyph,fontSize) {
-		return null;
-	}
-	,renderGlyphs: function(glyphs,fontSize) {
-		return null;
-	}
-	,__copyFrom: function(other) {
-		if(other != null) {
-			this.ascender = other.ascender;
-			this.descender = other.descender;
-			this.height = other.height;
-			this.name = other.name;
-			this.numGlyphs = other.numGlyphs;
-			this.src = other.src;
-			this.underlinePosition = other.underlinePosition;
-			this.underlineThickness = other.underlineThickness;
-			this.unitsPerEM = other.unitsPerEM;
-			this.__fontID = other.__fontID;
-			this.__fontPath = other.__fontPath;
-			this.__init = true;
-		}
-	}
-	,__fromBytes: function(bytes) {
-		this.__fontPath = null;
-	}
-	,__fromFile: function(path) {
-		this.__fontPath = path;
-	}
-	,__initializeSource: function() {
-		this.__init = true;
-	}
-	,__loadFromName: function(name) {
-		var _gthis = this;
-		var promise = new lime_app_Promise();
-		this.name = name;
-		var userAgent = $global.navigator.userAgent.toLowerCase();
-		var isSafari = userAgent.indexOf(" safari/") >= 0 && userAgent.indexOf(" chrome/") < 0;
-		var isUIWebView = new EReg("(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)","i").match(userAgent);
-		if(!isSafari && !isUIWebView && (window.document.fonts && ($_=window.document.fonts,$bind($_,$_.load)))) {
-			window.document.fonts.load("1em '" + name + "'").then(function(_) {
-				promise.complete(_gthis);
-			},function(_) {
-				lime_utils_Log.warn("Could not load web font \"" + name + "\"",{ fileName : "lime/text/Font.hx", lineNumber : 640, className : "lime.text.Font", methodName : "__loadFromName"});
-				promise.complete(_gthis);
-			});
-		} else {
-			var node1 = lime_text_Font.__measureFontNode("'" + name + "', sans-serif");
-			var node2 = lime_text_Font.__measureFontNode("'" + name + "', serif");
-			var width1 = node1.offsetWidth;
-			var width2 = node2.offsetWidth;
-			var interval = -1;
-			var timeout = 3000;
-			var intervalLength = 50;
-			var intervalCount = 0;
-			var loaded;
-			var timeExpired;
-			var checkFont = function() {
-				intervalCount += 1;
-				loaded = node1.offsetWidth != width1 || node2.offsetWidth != width2;
-				timeExpired = intervalCount * intervalLength >= timeout;
-				if(loaded || timeExpired) {
-					window.clearInterval(interval);
-					node1.parentNode.removeChild(node1);
-					node2.parentNode.removeChild(node2);
-					node1 = null;
-					node2 = null;
-					if(timeExpired) {
-						lime_utils_Log.warn("Could not load web font \"" + name + "\"",{ fileName : "lime/text/Font.hx", lineNumber : 675, className : "lime.text.Font", methodName : "__loadFromName"});
-					}
-					promise.complete(_gthis);
-				}
-			};
-			interval = window.setInterval(checkFont,intervalLength);
-		}
-		return promise.future;
-	}
-	,__setSize: function(size,dpi) {
-		if(dpi == null) {
-			dpi = 72;
-		}
-	}
-	,__class__: lime_text_Font
-};
-var _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf = $hx_exports["__ASSET__flixel_fonts_nokiafc22_ttf"] = function() {
-	this.ascender = 2048;
-	this.descender = -512;
-	this.height = 2816;
-	this.numGlyphs = 172;
-	this.underlinePosition = -640;
-	this.underlineThickness = 256;
-	this.unitsPerEM = 2048;
-	this.name = "Nokia Cellphone FC Small";
-	lime_text_Font.call(this);
-};
-$hxClasses["__ASSET__flixel_fonts_nokiafc22_ttf"] = _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf;
-_$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf.__name__ = "__ASSET__flixel_fonts_nokiafc22_ttf";
-_$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf.__super__ = lime_text_Font;
-_$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf.prototype = $extend(lime_text_Font.prototype,{
-	__class__: _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf
-});
-var _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf = $hx_exports["__ASSET__flixel_fonts_monsterrat_ttf"] = function() {
-	this.ascender = 968;
-	this.descender = -251;
-	this.height = 1219;
-	this.numGlyphs = 263;
-	this.underlinePosition = -150;
-	this.underlineThickness = 50;
-	this.unitsPerEM = 1000;
-	this.name = "Monsterrat";
-	lime_text_Font.call(this);
-};
-$hxClasses["__ASSET__flixel_fonts_monsterrat_ttf"] = _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf;
-_$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf.__name__ = "__ASSET__flixel_fonts_monsterrat_ttf";
-_$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf.__super__ = lime_text_Font;
-_$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf.prototype = $extend(lime_text_Font.prototype,{
-	__class__: _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf
-});
-var openfl_text_Font = function(name) {
-	lime_text_Font.call(this,name);
-};
-$hxClasses["openfl.text.Font"] = openfl_text_Font;
-openfl_text_Font.__name__ = "openfl.text.Font";
-openfl_text_Font.enumerateFonts = function(enumerateDeviceFonts) {
-	if(enumerateDeviceFonts == null) {
-		enumerateDeviceFonts = false;
-	}
-	return openfl_text_Font.__registeredFonts;
-};
-openfl_text_Font.fromBytes = function(bytes) {
-	var font = new openfl_text_Font();
-	font.__fromBytes(openfl_utils_ByteArray.toBytes(bytes));
-	return font;
-};
-openfl_text_Font.fromFile = function(path) {
-	if(path == null) {
-		return null;
-	}
-	var font = new openfl_text_Font();
-	font.__fromFile(path);
-	return font;
-};
-openfl_text_Font.loadFromBytes = function(bytes) {
-	return lime_text_Font.loadFromBytes(openfl_utils_ByteArray.toBytes(bytes)).then(function(limeFont) {
-		var font = new openfl_text_Font();
-		font.__fromLimeFont(limeFont);
-		return lime_app_Future.withValue(font);
-	});
-};
-openfl_text_Font.loadFromFile = function(path) {
-	return lime_text_Font.loadFromFile(path).then(function(limeFont) {
-		var font = new openfl_text_Font();
-		font.__fromLimeFont(limeFont);
-		return lime_app_Future.withValue(font);
-	});
-};
-openfl_text_Font.loadFromName = function(path) {
-	return lime_text_Font.loadFromName(path).then(function(limeFont) {
-		var font = new openfl_text_Font();
-		font.__fromLimeFont(limeFont);
-		return lime_app_Future.withValue(font);
-	});
-};
-openfl_text_Font.registerFont = function(font) {
-	var instance = null;
-	if(js_Boot.getClass(font) == null) {
-		instance = js_Boot.__cast(Type.createInstance(font,[]) , openfl_text_Font);
-	} else {
-		instance = js_Boot.__cast(font , openfl_text_Font);
-	}
-	if(instance != null) {
-		openfl_text_Font.__registeredFonts.push(instance);
-		openfl_text_Font.__fontByName.h[instance.name] = instance;
-	}
-};
-openfl_text_Font.__super__ = lime_text_Font;
-openfl_text_Font.prototype = $extend(lime_text_Font.prototype,{
-	fontStyle: null
-	,fontType: null
-	,__initialized: null
-	,__fromLimeFont: function(font) {
-		this.__copyFrom(font);
-	}
-	,__initialize: function() {
-		return this.__initialized;
-	}
-	,get_fontName: function() {
-		return this.name;
-	}
-	,set_fontName: function(value) {
-		return this.name = value;
-	}
-	,__class__: openfl_text_Font
-	,__properties__: {set_fontName:"set_fontName",get_fontName:"get_fontName"}
-});
-var _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf = $hx_exports["__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf"] = function() {
-	this.__fromLimeFont(new _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf());
-	openfl_text_Font.call(this);
-};
-$hxClasses["__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf"] = _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf;
-_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf.__name__ = "__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf";
-_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf.__super__ = openfl_text_Font;
-_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf.prototype = $extend(openfl_text_Font.prototype,{
-	__class__: _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf
-});
-var _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf = $hx_exports["__ASSET__OPENFL__flixel_fonts_monsterrat_ttf"] = function() {
-	this.__fromLimeFont(new _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf());
-	openfl_text_Font.call(this);
-};
-$hxClasses["__ASSET__OPENFL__flixel_fonts_monsterrat_ttf"] = _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf;
-_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.__name__ = "__ASSET__OPENFL__flixel_fonts_monsterrat_ttf";
-_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.__super__ = openfl_text_Font;
-_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.prototype = $extend(openfl_text_Font.prototype,{
-	__class__: _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf
-});
-Math.__name__ = "Math";
 var flixel_util_IFlxDestroyable = function() { };
 $hxClasses["flixel.util.IFlxDestroyable"] = flixel_util_IFlxDestroyable;
 flixel_util_IFlxDestroyable.__name__ = "flixel.util.IFlxDestroyable";
@@ -7587,6 +7029,4388 @@ HealthBar.prototype = $extend(flixel_FlxSprite.prototype,{
 	}
 	,__class__: HealthBar
 });
+var flixel_addons_nape_FlxNapeSprite = function(X,Y,SimpleGraphic,CreateRectangularBody,EnablePhysics) {
+	if(EnablePhysics == null) {
+		EnablePhysics = true;
+	}
+	if(CreateRectangularBody == null) {
+		CreateRectangularBody = true;
+	}
+	if(Y == null) {
+		Y = 0;
+	}
+	if(X == null) {
+		X = 0;
+	}
+	this._angularDrag = 1;
+	this._linearDrag = 1;
+	this.physicsEnabled = false;
+	flixel_FlxSprite.call(this,X,Y,SimpleGraphic);
+	if(CreateRectangularBody) {
+		this.createRectangularBody();
+	}
+	if(this.body != null) {
+		var _this = this.body;
+		var space = EnablePhysics ? flixel_addons_nape_FlxNapeSpace.space : null;
+		_this.zpp_inner.immutable_midstep("Body::space");
+		if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
+			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+				_this.zpp_inner.component.woken = false;
+			}
+			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+				(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
+			}
+			if(space != null) {
+				var _this1 = space.zpp_inner.wrap_bodies;
+				if(_this1.zpp_inner.reverse_flag) {
+					_this1.push(_this);
+				} else {
+					_this1.unshift(_this);
+				}
+			}
+		}
+		var tmp = _this.zpp_inner.space == null;
+	}
+	this.physicsEnabled = EnablePhysics;
+};
+$hxClasses["flixel.addons.nape.FlxNapeSprite"] = flixel_addons_nape_FlxNapeSprite;
+flixel_addons_nape_FlxNapeSprite.__name__ = "flixel.addons.nape.FlxNapeSprite";
+flixel_addons_nape_FlxNapeSprite.__super__ = flixel_FlxSprite;
+flixel_addons_nape_FlxNapeSprite.prototype = $extend(flixel_FlxSprite.prototype,{
+	body: null
+	,physicsEnabled: null
+	,_linearDrag: null
+	,_angularDrag: null
+	,destroy: function() {
+		this.destroyPhysObjects();
+		flixel_FlxSprite.prototype.destroy.call(this);
+	}
+	,update: function(elapsed) {
+		flixel_FlxSprite.prototype.update.call(this,elapsed);
+		if(this.body != null && this.moves) {
+			this.updatePhysObjects();
+		}
+	}
+	,kill: function() {
+		flixel_FlxSprite.prototype.kill.call(this);
+		if(this.body != null) {
+			var _this = this.body;
+			var space = null;
+			_this.zpp_inner.immutable_midstep("Body::space");
+			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					_this.zpp_inner.component.woken = false;
+				}
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
+				}
+				if(space != null) {
+					var _this1 = space.zpp_inner.wrap_bodies;
+					if(_this1.zpp_inner.reverse_flag) {
+						_this1.push(_this);
+					} else {
+						_this1.unshift(_this);
+					}
+				}
+			}
+			var tmp = _this.zpp_inner.space == null;
+		}
+	}
+	,revive: function() {
+		flixel_FlxSprite.prototype.revive.call(this);
+		if(this.body != null) {
+			var _this = this.body;
+			var space = flixel_addons_nape_FlxNapeSpace.space;
+			_this.zpp_inner.immutable_midstep("Body::space");
+			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					_this.zpp_inner.component.woken = false;
+				}
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
+				}
+				if(space != null) {
+					var _this1 = space.zpp_inner.wrap_bodies;
+					if(_this1.zpp_inner.reverse_flag) {
+						_this1.push(_this);
+					} else {
+						_this1.unshift(_this);
+					}
+				}
+			}
+			var tmp = _this.zpp_inner.space == null;
+		}
+	}
+	,addPremadeBody: function(NewBody) {
+		if(this.body != null) {
+			this.destroyPhysObjects();
+		}
+		if(NewBody.zpp_inner.wrap_pos == null) {
+			NewBody.zpp_inner.setupPosition();
+		}
+		var _this = NewBody.zpp_inner.wrap_pos;
+		var x = this.x;
+		var _this1 = _this.zpp_inner;
+		if(_this1._validate != null) {
+			_this1._validate();
+		}
+		if(_this.zpp_inner.x != x) {
+			_this.zpp_inner.x = x;
+			var _this1 = _this.zpp_inner;
+			if(_this1._invalidate != null) {
+				_this1._invalidate(_this1);
+			}
+		}
+		var _this1 = _this.zpp_inner;
+		if(_this1._validate != null) {
+			_this1._validate();
+		}
+		if(NewBody.zpp_inner.wrap_pos == null) {
+			NewBody.zpp_inner.setupPosition();
+		}
+		var _this = NewBody.zpp_inner.wrap_pos;
+		var y = this.y;
+		var _this1 = _this.zpp_inner;
+		if(_this1._validate != null) {
+			_this1._validate();
+		}
+		if(_this.zpp_inner.y != y) {
+			_this.zpp_inner.y = y;
+			var _this1 = _this.zpp_inner;
+			if(_this1._invalidate != null) {
+				_this1._invalidate(_this1);
+			}
+		}
+		var _this1 = _this.zpp_inner;
+		if(_this1._validate != null) {
+			_this1._validate();
+		}
+		this.setBody(NewBody);
+		this.setBodyMaterial();
+	}
+	,createCircularBody: function(Radius,_Type) {
+		if(Radius == null) {
+			Radius = 16;
+		}
+		if(this.body != null) {
+			this.destroyPhysObjects();
+		}
+		this.centerOffsets(false);
+		var tmp;
+		if(_Type != null) {
+			tmp = _Type;
+		} else {
+			if(zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC == null) {
+				zpp_$nape_util_ZPP_$Flags.internal = true;
+				zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC = new nape_phys_BodyType();
+				zpp_$nape_util_ZPP_$Flags.internal = false;
+			}
+			tmp = zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC;
+		}
+		var x = this.x;
+		var y = this.y;
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var x1 = x;
+		var y1 = y;
+		var weak = true;
+		if(weak == null) {
+			weak = false;
+		}
+		if(y1 == null) {
+			y1 = 0;
+		}
+		if(x1 == null) {
+			x1 = 0;
+		}
+		var ret;
+		if(zpp_$nape_util_ZPP_$PubPool.poolVec2 == null) {
+			ret = new nape_geom_Vec2();
+		} else {
+			ret = zpp_$nape_util_ZPP_$PubPool.poolVec2;
+			zpp_$nape_util_ZPP_$PubPool.poolVec2 = ret.zpp_pool;
+			ret.zpp_pool = null;
+		}
+		if(ret.zpp_inner == null) {
+			var ret1;
+			if(zpp_$nape_geom_ZPP_$Vec2.zpp_pool == null) {
+				ret1 = new zpp_$nape_geom_ZPP_$Vec2();
+			} else {
+				ret1 = zpp_$nape_geom_ZPP_$Vec2.zpp_pool;
+				zpp_$nape_geom_ZPP_$Vec2.zpp_pool = ret1.next;
+				ret1.next = null;
+			}
+			ret1.weak = false;
+			ret1._immutable = false;
+			ret1.x = x1;
+			ret1.y = y1;
+			ret.zpp_inner = ret1;
+			ret.zpp_inner.outer = ret;
+		} else {
+			var tmp1;
+			var _this = ret.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(ret.zpp_inner.x == x1) {
+				var _this = ret.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				tmp1 = ret.zpp_inner.y == y1;
+			} else {
+				tmp1 = false;
+			}
+			if(!tmp1) {
+				ret.zpp_inner.x = x1;
+				ret.zpp_inner.y = y1;
+				var _this = ret.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+		}
+		ret.zpp_inner.weak = weak;
+		this.setBody(new nape_phys_Body(tmp,ret));
+		var _this = this.body.zpp_inner.wrap_shapes;
+		var obj = new nape_shape_Circle(Radius);
+		if(_this.zpp_inner.reverse_flag) {
+			_this.push(obj);
+		} else {
+			_this.unshift(obj);
+		}
+		this.setBodyMaterial();
+	}
+	,createRectangularBody: function(Width,Height,_Type) {
+		if(Height == null) {
+			Height = 0;
+		}
+		if(Width == null) {
+			Width = 0;
+		}
+		if(this.body != null) {
+			this.destroyPhysObjects();
+		}
+		if(Width <= 0) {
+			Width = this.frameWidth;
+		}
+		if(Height <= 0) {
+			Height = this.frameHeight;
+		}
+		this.centerOffsets(false);
+		var tmp;
+		if(_Type != null) {
+			tmp = _Type;
+		} else {
+			if(zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC == null) {
+				zpp_$nape_util_ZPP_$Flags.internal = true;
+				zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC = new nape_phys_BodyType();
+				zpp_$nape_util_ZPP_$Flags.internal = false;
+			}
+			tmp = zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC;
+		}
+		var x = this.x;
+		var y = this.y;
+		if(y == null) {
+			y = 0;
+		}
+		if(x == null) {
+			x = 0;
+		}
+		var x1 = x;
+		var y1 = y;
+		var weak = true;
+		if(weak == null) {
+			weak = false;
+		}
+		if(y1 == null) {
+			y1 = 0;
+		}
+		if(x1 == null) {
+			x1 = 0;
+		}
+		var ret;
+		if(zpp_$nape_util_ZPP_$PubPool.poolVec2 == null) {
+			ret = new nape_geom_Vec2();
+		} else {
+			ret = zpp_$nape_util_ZPP_$PubPool.poolVec2;
+			zpp_$nape_util_ZPP_$PubPool.poolVec2 = ret.zpp_pool;
+			ret.zpp_pool = null;
+		}
+		if(ret.zpp_inner == null) {
+			var ret1;
+			if(zpp_$nape_geom_ZPP_$Vec2.zpp_pool == null) {
+				ret1 = new zpp_$nape_geom_ZPP_$Vec2();
+			} else {
+				ret1 = zpp_$nape_geom_ZPP_$Vec2.zpp_pool;
+				zpp_$nape_geom_ZPP_$Vec2.zpp_pool = ret1.next;
+				ret1.next = null;
+			}
+			ret1.weak = false;
+			ret1._immutable = false;
+			ret1.x = x1;
+			ret1.y = y1;
+			ret.zpp_inner = ret1;
+			ret.zpp_inner.outer = ret;
+		} else {
+			var tmp1;
+			var _this = ret.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(ret.zpp_inner.x == x1) {
+				var _this = ret.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				tmp1 = ret.zpp_inner.y == y1;
+			} else {
+				tmp1 = false;
+			}
+			if(!tmp1) {
+				ret.zpp_inner.x = x1;
+				ret.zpp_inner.y = y1;
+				var _this = ret.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+		}
+		ret.zpp_inner.weak = weak;
+		this.setBody(new nape_phys_Body(tmp,ret));
+		var _this = this.body.zpp_inner.wrap_shapes;
+		var obj = new nape_shape_Polygon(nape_shape_Polygon.box(Width,Height));
+		if(_this.zpp_inner.reverse_flag) {
+			_this.push(obj);
+		} else {
+			_this.unshift(obj);
+		}
+		this.setBodyMaterial();
+	}
+	,setBodyMaterial: function(Elasticity,DynamicFriction,StaticFriction,Density,RotationFriction) {
+		if(RotationFriction == null) {
+			RotationFriction = 0.001;
+		}
+		if(Density == null) {
+			Density = 1;
+		}
+		if(StaticFriction == null) {
+			StaticFriction = 0.4;
+		}
+		if(DynamicFriction == null) {
+			DynamicFriction = 0.2;
+		}
+		if(Elasticity == null) {
+			Elasticity = 1;
+		}
+		if(this.body == null) {
+			return;
+		}
+		this.body.setShapeMaterials(new nape_phys_Material(Elasticity,DynamicFriction,StaticFriction,Density,RotationFriction));
+	}
+	,destroyPhysObjects: function() {
+		if(this.body != null) {
+			if(flixel_addons_nape_FlxNapeSpace.space != null) {
+				flixel_addons_nape_FlxNapeSpace.space.zpp_inner.wrap_bodies.remove(this.body);
+			}
+			this.body = null;
+		}
+	}
+	,setDrag: function(LinearDrag,AngularDrag) {
+		if(AngularDrag == null) {
+			AngularDrag = 1;
+		}
+		if(LinearDrag == null) {
+			LinearDrag = 1;
+		}
+		this._linearDrag = LinearDrag;
+		this._angularDrag = AngularDrag;
+	}
+	,setBody: function(body) {
+		this.body = body;
+		var Value = this.physicsEnabled;
+		if(this.body != null) {
+			var _this = this.body;
+			var space = Value ? flixel_addons_nape_FlxNapeSpace.space : null;
+			_this.zpp_inner.immutable_midstep("Body::space");
+			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					_this.zpp_inner.component.woken = false;
+				}
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
+				}
+				if(space != null) {
+					var _this1 = space.zpp_inner.wrap_bodies;
+					if(_this1.zpp_inner.reverse_flag) {
+						_this1.push(_this);
+					} else {
+						_this1.unshift(_this);
+					}
+				}
+			}
+			var tmp = _this.zpp_inner.space == null;
+		}
+		this.physicsEnabled = Value;
+	}
+	,updatePhysObjects: function() {
+		this.updatePosition();
+		if(!this.body.zpp_inner.norotate) {
+			this.set_angle(this.body.zpp_inner.rot * (180 / Math.PI));
+		}
+		if(this._linearDrag < 1 || this._angularDrag < 1) {
+			var fh = this.body;
+			var angularVel = fh.zpp_inner.angvel * this._angularDrag;
+			if(fh.zpp_inner.angvel != angularVel) {
+				fh.zpp_inner.angvel = angularVel;
+				fh.zpp_inner.wake();
+			}
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var fh = _this.zpp_inner.wrap_vel;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var x = fh.zpp_inner.x * this._linearDrag;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.x != x) {
+				fh.zpp_inner.x = x;
+				var _this = fh.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var fh = _this.zpp_inner.wrap_vel;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var y = fh.zpp_inner.y * this._linearDrag;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.y != y) {
+				fh.zpp_inner.y = y;
+				var _this = fh.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+		}
+	}
+	,updatePosition: function() {
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_pos == null) {
+			_this.zpp_inner.setupPosition();
+		}
+		var _this1 = _this.zpp_inner.wrap_pos;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		this.set_x(_this1.zpp_inner.x - this.origin.x);
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_pos == null) {
+			_this.zpp_inner.setupPosition();
+		}
+		var _this1 = _this.zpp_inner.wrap_pos;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		this.set_y(_this1.zpp_inner.y - this.origin.y);
+	}
+	,set_physicsEnabled: function(Value) {
+		if(this.body != null) {
+			var _this = this.body;
+			var space = Value ? flixel_addons_nape_FlxNapeSpace.space : null;
+			_this.zpp_inner.immutable_midstep("Body::space");
+			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					_this.zpp_inner.component.woken = false;
+				}
+				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
+					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
+				}
+				if(space != null) {
+					var _this1 = space.zpp_inner.wrap_bodies;
+					if(_this1.zpp_inner.reverse_flag) {
+						_this1.push(_this);
+					} else {
+						_this1.unshift(_this);
+					}
+				}
+			}
+			var tmp = _this.zpp_inner.space == null;
+		}
+		return this.physicsEnabled = Value;
+	}
+	,setPosition: function(X,Y) {
+		if(Y == null) {
+			Y = 0;
+		}
+		if(X == null) {
+			X = 0;
+		}
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_pos == null) {
+			_this.zpp_inner.setupPosition();
+		}
+		var _this1 = _this.zpp_inner.wrap_pos;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		if(_this1.zpp_inner.x != X) {
+			_this1.zpp_inner.x = X;
+			var _this = _this1.zpp_inner;
+			if(_this._invalidate != null) {
+				_this._invalidate(_this);
+			}
+		}
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_pos == null) {
+			_this.zpp_inner.setupPosition();
+		}
+		var _this1 = _this.zpp_inner.wrap_pos;
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		if(_this1.zpp_inner.y != Y) {
+			_this1.zpp_inner.y = Y;
+			var _this = _this1.zpp_inner;
+			if(_this._invalidate != null) {
+				_this._invalidate(_this);
+			}
+		}
+		var _this = _this1.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		this.updatePosition();
+	}
+	,__class__: flixel_addons_nape_FlxNapeSprite
+	,__properties__: $extend(flixel_FlxSprite.prototype.__properties__,{set_physicsEnabled:"set_physicsEnabled"})
+});
+var nape_callbacks_CbType = function() {
+	this.zpp_inner = null;
+	this.zpp_inner = new zpp_$nape_callbacks_ZPP_$CbType();
+	this.zpp_inner.outer = this;
+};
+$hxClasses["nape.callbacks.CbType"] = nape_callbacks_CbType;
+nape_callbacks_CbType.__name__ = "nape.callbacks.CbType";
+nape_callbacks_CbType.__properties__ = {get_ANY_COMPOUND:"get_ANY_COMPOUND",get_ANY_SHAPE:"get_ANY_SHAPE",get_ANY_CONSTRAINT:"get_ANY_CONSTRAINT",get_ANY_BODY:"get_ANY_BODY"};
+nape_callbacks_CbType.get_ANY_BODY = function() {
+	return zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY;
+};
+nape_callbacks_CbType.get_ANY_CONSTRAINT = function() {
+	return zpp_$nape_callbacks_ZPP_$CbType.ANY_CONSTRAINT;
+};
+nape_callbacks_CbType.get_ANY_SHAPE = function() {
+	return zpp_$nape_callbacks_ZPP_$CbType.ANY_SHAPE;
+};
+nape_callbacks_CbType.get_ANY_COMPOUND = function() {
+	return zpp_$nape_callbacks_ZPP_$CbType.ANY_COMPOUND;
+};
+nape_callbacks_CbType.prototype = {
+	zpp_inner: null
+	,get_id: function() {
+		return this.zpp_inner.id;
+	}
+	,including: function(includes) {
+		return new nape_callbacks_OptionType(this).including(includes);
+	}
+	,excluding: function(excludes) {
+		return new nape_callbacks_OptionType(this).excluding(excludes);
+	}
+	,get_userData: function() {
+		if(this.zpp_inner.userData == null) {
+			this.zpp_inner.userData = { };
+		}
+		return this.zpp_inner.userData;
+	}
+	,get_interactors: function() {
+		if(this.zpp_inner.wrap_interactors == null) {
+			this.zpp_inner.wrap_interactors = zpp_$nape_util_ZPP_$InteractorList.get(this.zpp_inner.interactors,true);
+		}
+		return this.zpp_inner.wrap_interactors;
+	}
+	,get_constraints: function() {
+		if(this.zpp_inner.wrap_constraints == null) {
+			this.zpp_inner.wrap_constraints = zpp_$nape_util_ZPP_$ConstraintList.get(this.zpp_inner.constraints,true);
+		}
+		return this.zpp_inner.wrap_constraints;
+	}
+	,toString: function() {
+		if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY) {
+			return "ANY_BODY";
+		} else if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_SHAPE) {
+			return "ANY_SHAPE";
+		} else if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_COMPOUND) {
+			return "ANY_COMPOUND";
+		} else if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_CONSTRAINT) {
+			return "ANY_CONSTRAINT";
+		} else {
+			return "CbType#" + this.zpp_inner.id;
+		}
+	}
+	,__class__: nape_callbacks_CbType
+	,__properties__: {get_constraints:"get_constraints",get_interactors:"get_interactors",get_userData:"get_userData",get_id:"get_id"}
+};
+var zpp_$nape_callbacks_ZPP_$CbType = function() {
+	this.conlisteners = null;
+	this.bodylisteners = null;
+	this.listeners = null;
+	this.cbsets = null;
+	this.id = 0;
+	this.userData = null;
+	this.outer = null;
+	this.id = zpp_$nape_ZPP_$ID.CbType();
+	this.listeners = new zpp_$nape_util_ZNPList_$ZPP_$InteractionListener();
+	this.bodylisteners = new zpp_$nape_util_ZNPList_$ZPP_$BodyListener();
+	this.conlisteners = new zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener();
+	this.constraints = new zpp_$nape_util_ZNPList_$ZPP_$Constraint();
+	this.interactors = new zpp_$nape_util_ZNPList_$ZPP_$Interactor();
+	this.cbsets = new zpp_$nape_util_ZNPList_$ZPP_$CbSet();
+};
+$hxClasses["zpp_nape.callbacks.ZPP_CbType"] = zpp_$nape_callbacks_ZPP_$CbType;
+zpp_$nape_callbacks_ZPP_$CbType.__name__ = "zpp_nape.callbacks.ZPP_CbType";
+zpp_$nape_callbacks_ZPP_$CbType.setlt = function(a,b) {
+	return a.id < b.id;
+};
+zpp_$nape_callbacks_ZPP_$CbType.prototype = {
+	outer: null
+	,userData: null
+	,id: null
+	,cbsets: null
+	,interactors: null
+	,wrap_interactors: null
+	,constraints: null
+	,wrap_constraints: null
+	,addConstraint: function(con) {
+		this.constraints.add(con);
+	}
+	,addInteractor: function(intx) {
+		this.interactors.add(intx);
+	}
+	,remConstraint: function(con) {
+		this.constraints.remove(con);
+	}
+	,remInteractor: function(intx) {
+		this.interactors.remove(intx);
+	}
+	,listeners: null
+	,addint: function(x) {
+		var pre = null;
+		var cx_ite = this.listeners.head;
+		while(cx_ite != null) {
+			var j = cx_ite.elt;
+			if(x.precedence > j.precedence || x.precedence == j.precedence && x.id > j.id) {
+				break;
+			}
+			pre = cx_ite;
+			cx_ite = cx_ite.next;
+		}
+		var _this = this.listeners;
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = x;
+		var temp = ret;
+		if(pre == null) {
+			temp.next = _this.head;
+			_this.head = temp;
+		} else {
+			temp.next = pre.next;
+			pre.next = temp;
+		}
+		_this.pushmod = _this.modified = true;
+		_this.length++;
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_listeners = true;
+			cb.invalidate_pairs();
+			cx_ite = cx_ite.next;
+		}
+	}
+	,removeint: function(x) {
+		this.listeners.remove(x);
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_listeners = true;
+			cb.invalidate_pairs();
+			cx_ite = cx_ite.next;
+		}
+	}
+	,invalidateint: function() {
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_listeners = true;
+			cb.invalidate_pairs();
+			cx_ite = cx_ite.next;
+		}
+	}
+	,bodylisteners: null
+	,addbody: function(x) {
+		var pre = null;
+		var cx_ite = this.bodylisteners.head;
+		while(cx_ite != null) {
+			var j = cx_ite.elt;
+			if(x.precedence > j.precedence || x.precedence == j.precedence && x.id > j.id) {
+				break;
+			}
+			pre = cx_ite;
+			cx_ite = cx_ite.next;
+		}
+		var _this = this.bodylisteners;
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = x;
+		var temp = ret;
+		if(pre == null) {
+			temp.next = _this.head;
+			_this.head = temp;
+		} else {
+			temp.next = pre.next;
+			pre.next = temp;
+		}
+		_this.pushmod = _this.modified = true;
+		_this.length++;
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_bodylisteners = true;
+			cx_ite = cx_ite.next;
+		}
+	}
+	,removebody: function(x) {
+		this.bodylisteners.remove(x);
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_bodylisteners = true;
+			cx_ite = cx_ite.next;
+		}
+	}
+	,invalidatebody: function() {
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_bodylisteners = true;
+			cx_ite = cx_ite.next;
+		}
+	}
+	,conlisteners: null
+	,addconstraint: function(x) {
+		var pre = null;
+		var cx_ite = this.conlisteners.head;
+		while(cx_ite != null) {
+			var j = cx_ite.elt;
+			if(x.precedence > j.precedence || x.precedence == j.precedence && x.id > j.id) {
+				break;
+			}
+			pre = cx_ite;
+			cx_ite = cx_ite.next;
+		}
+		var _this = this.conlisteners;
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = x;
+		var temp = ret;
+		if(pre == null) {
+			temp.next = _this.head;
+			_this.head = temp;
+		} else {
+			temp.next = pre.next;
+			pre.next = temp;
+		}
+		_this.pushmod = _this.modified = true;
+		_this.length++;
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_conlisteners = true;
+			cx_ite = cx_ite.next;
+		}
+	}
+	,removeconstraint: function(x) {
+		this.conlisteners.remove(x);
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_conlisteners = true;
+			cx_ite = cx_ite.next;
+		}
+	}
+	,invalidateconstraint: function() {
+		var cx_ite = this.cbsets.head;
+		while(cx_ite != null) {
+			var cb = cx_ite.elt;
+			cb.zip_conlisteners = true;
+			cx_ite = cx_ite.next;
+		}
+	}
+	,__class__: zpp_$nape_callbacks_ZPP_$CbType
+};
+var zpp_$nape_ZPP_$ID = function() { };
+$hxClasses["zpp_nape.ZPP_ID"] = zpp_$nape_ZPP_$ID;
+zpp_$nape_ZPP_$ID.__name__ = "zpp_nape.ZPP_ID";
+zpp_$nape_ZPP_$ID.Interactor = function() {
+	return zpp_$nape_ZPP_$ID._Interactor++;
+};
+zpp_$nape_ZPP_$ID.Space = function() {
+	return zpp_$nape_ZPP_$ID._Space++;
+};
+zpp_$nape_ZPP_$ID.ZPP_SimpleVert = function() {
+	return zpp_$nape_ZPP_$ID._ZPP_SimpleVert++;
+};
+zpp_$nape_ZPP_$ID.ZPP_SimpleSeg = function() {
+	return zpp_$nape_ZPP_$ID._ZPP_SimpleSeg++;
+};
+zpp_$nape_ZPP_$ID.InteractionGroup = function() {
+	return zpp_$nape_ZPP_$ID._InteractionGroup++;
+};
+zpp_$nape_ZPP_$ID.Constraint = function() {
+	return zpp_$nape_ZPP_$ID._Constraint++;
+};
+zpp_$nape_ZPP_$ID.CbType = function() {
+	return zpp_$nape_ZPP_$ID._CbType++;
+};
+zpp_$nape_ZPP_$ID.CbSet = function() {
+	return zpp_$nape_ZPP_$ID._CbSet++;
+};
+zpp_$nape_ZPP_$ID.Listener = function() {
+	return zpp_$nape_ZPP_$ID._Listener++;
+};
+var zpp_$nape_util_ZNPList_$ZPP_$InteractionListener = function() {
+	this.length = 0;
+	this.pushmod = false;
+	this.modified = false;
+	this.head = null;
+};
+$hxClasses["zpp_nape.util.ZNPList_ZPP_InteractionListener"] = zpp_$nape_util_ZNPList_$ZPP_$InteractionListener;
+zpp_$nape_util_ZNPList_$ZPP_$InteractionListener.__name__ = "zpp_nape.util.ZNPList_ZPP_InteractionListener";
+zpp_$nape_util_ZNPList_$ZPP_$InteractionListener.prototype = {
+	head: null
+	,begin: function() {
+		return this.head;
+	}
+	,modified: null
+	,pushmod: null
+	,length: null
+	,setbegin: function(i) {
+		this.head = i;
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,inlined_add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,addAll: function(x) {
+		var cx_ite = x.head;
+		while(cx_ite != null) {
+			var i = cx_ite.elt;
+			this.add(i);
+			cx_ite = cx_ite.next;
+		}
+	}
+	,insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,inlined_insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,inlined_pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,inlined_pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				this.erase(pre);
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,inlined_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,inlined_try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,inlined_erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,splice: function(pre,n) {
+		while(n-- > 0 && pre.next != null) this.erase(pre);
+		return pre.next;
+	}
+	,clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,inlined_clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,reverse: function() {
+		var cur = this.head;
+		var pre = null;
+		while(cur != null) {
+			var nx = cur.next;
+			cur.next = pre;
+			this.head = cur;
+			pre = cur;
+			cur = nx;
+		}
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,empty: function() {
+		return this.head == null;
+	}
+	,size: function() {
+		return this.length;
+	}
+	,has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,inlined_has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,front: function() {
+		return this.head.elt;
+	}
+	,back: function() {
+		var ret = this.head;
+		var cur = ret;
+		while(cur != null) {
+			ret = cur;
+			cur = cur.next;
+		}
+		return ret.elt;
+	}
+	,iterator_at: function(ind) {
+		var ret = this.head;
+		while(ind-- > 0 && ret != null) ret = ret.next;
+		return ret;
+	}
+	,at: function(ind) {
+		var it = this.iterator_at(ind);
+		if(it != null) {
+			return it.elt;
+		} else {
+			return null;
+		}
+	}
+	,__class__: zpp_$nape_util_ZNPList_$ZPP_$InteractionListener
+};
+var zpp_$nape_util_ZNPList_$ZPP_$BodyListener = function() {
+	this.length = 0;
+	this.pushmod = false;
+	this.modified = false;
+	this.head = null;
+};
+$hxClasses["zpp_nape.util.ZNPList_ZPP_BodyListener"] = zpp_$nape_util_ZNPList_$ZPP_$BodyListener;
+zpp_$nape_util_ZNPList_$ZPP_$BodyListener.__name__ = "zpp_nape.util.ZNPList_ZPP_BodyListener";
+zpp_$nape_util_ZNPList_$ZPP_$BodyListener.prototype = {
+	head: null
+	,begin: function() {
+		return this.head;
+	}
+	,modified: null
+	,pushmod: null
+	,length: null
+	,setbegin: function(i) {
+		this.head = i;
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,inlined_add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,addAll: function(x) {
+		var cx_ite = x.head;
+		while(cx_ite != null) {
+			var i = cx_ite.elt;
+			this.add(i);
+			cx_ite = cx_ite.next;
+		}
+	}
+	,insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,inlined_insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,inlined_pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,inlined_pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				this.erase(pre);
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,inlined_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,inlined_try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,inlined_erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,splice: function(pre,n) {
+		while(n-- > 0 && pre.next != null) this.erase(pre);
+		return pre.next;
+	}
+	,clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,inlined_clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,reverse: function() {
+		var cur = this.head;
+		var pre = null;
+		while(cur != null) {
+			var nx = cur.next;
+			cur.next = pre;
+			this.head = cur;
+			pre = cur;
+			cur = nx;
+		}
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,empty: function() {
+		return this.head == null;
+	}
+	,size: function() {
+		return this.length;
+	}
+	,has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,inlined_has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,front: function() {
+		return this.head.elt;
+	}
+	,back: function() {
+		var ret = this.head;
+		var cur = ret;
+		while(cur != null) {
+			ret = cur;
+			cur = cur.next;
+		}
+		return ret.elt;
+	}
+	,iterator_at: function(ind) {
+		var ret = this.head;
+		while(ind-- > 0 && ret != null) ret = ret.next;
+		return ret;
+	}
+	,at: function(ind) {
+		var it = this.iterator_at(ind);
+		if(it != null) {
+			return it.elt;
+		} else {
+			return null;
+		}
+	}
+	,__class__: zpp_$nape_util_ZNPList_$ZPP_$BodyListener
+};
+var zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener = function() {
+	this.length = 0;
+	this.pushmod = false;
+	this.modified = false;
+	this.head = null;
+};
+$hxClasses["zpp_nape.util.ZNPList_ZPP_ConstraintListener"] = zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener;
+zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener.__name__ = "zpp_nape.util.ZNPList_ZPP_ConstraintListener";
+zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener.prototype = {
+	head: null
+	,begin: function() {
+		return this.head;
+	}
+	,modified: null
+	,pushmod: null
+	,length: null
+	,setbegin: function(i) {
+		this.head = i;
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,inlined_add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,addAll: function(x) {
+		var cx_ite = x.head;
+		while(cx_ite != null) {
+			var i = cx_ite.elt;
+			this.add(i);
+			cx_ite = cx_ite.next;
+		}
+	}
+	,insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,inlined_insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,inlined_pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,inlined_pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				this.erase(pre);
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,inlined_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,inlined_try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,inlined_erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,splice: function(pre,n) {
+		while(n-- > 0 && pre.next != null) this.erase(pre);
+		return pre.next;
+	}
+	,clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,inlined_clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,reverse: function() {
+		var cur = this.head;
+		var pre = null;
+		while(cur != null) {
+			var nx = cur.next;
+			cur.next = pre;
+			this.head = cur;
+			pre = cur;
+			cur = nx;
+		}
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,empty: function() {
+		return this.head == null;
+	}
+	,size: function() {
+		return this.length;
+	}
+	,has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,inlined_has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,front: function() {
+		return this.head.elt;
+	}
+	,back: function() {
+		var ret = this.head;
+		var cur = ret;
+		while(cur != null) {
+			ret = cur;
+			cur = cur.next;
+		}
+		return ret.elt;
+	}
+	,iterator_at: function(ind) {
+		var ret = this.head;
+		while(ind-- > 0 && ret != null) ret = ret.next;
+		return ret;
+	}
+	,at: function(ind) {
+		var it = this.iterator_at(ind);
+		if(it != null) {
+			return it.elt;
+		} else {
+			return null;
+		}
+	}
+	,__class__: zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener
+};
+var zpp_$nape_util_ZNPList_$ZPP_$Constraint = function() {
+	this.length = 0;
+	this.pushmod = false;
+	this.modified = false;
+	this.head = null;
+};
+$hxClasses["zpp_nape.util.ZNPList_ZPP_Constraint"] = zpp_$nape_util_ZNPList_$ZPP_$Constraint;
+zpp_$nape_util_ZNPList_$ZPP_$Constraint.__name__ = "zpp_nape.util.ZNPList_ZPP_Constraint";
+zpp_$nape_util_ZNPList_$ZPP_$Constraint.prototype = {
+	head: null
+	,begin: function() {
+		return this.head;
+	}
+	,modified: null
+	,pushmod: null
+	,length: null
+	,setbegin: function(i) {
+		this.head = i;
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,inlined_add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,addAll: function(x) {
+		var cx_ite = x.head;
+		while(cx_ite != null) {
+			var i = cx_ite.elt;
+			this.add(i);
+			cx_ite = cx_ite.next;
+		}
+	}
+	,insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,inlined_insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,inlined_pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,inlined_pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				this.erase(pre);
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,inlined_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,inlined_try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,inlined_erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,splice: function(pre,n) {
+		while(n-- > 0 && pre.next != null) this.erase(pre);
+		return pre.next;
+	}
+	,clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,inlined_clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,reverse: function() {
+		var cur = this.head;
+		var pre = null;
+		while(cur != null) {
+			var nx = cur.next;
+			cur.next = pre;
+			this.head = cur;
+			pre = cur;
+			cur = nx;
+		}
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,empty: function() {
+		return this.head == null;
+	}
+	,size: function() {
+		return this.length;
+	}
+	,has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,inlined_has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,front: function() {
+		return this.head.elt;
+	}
+	,back: function() {
+		var ret = this.head;
+		var cur = ret;
+		while(cur != null) {
+			ret = cur;
+			cur = cur.next;
+		}
+		return ret.elt;
+	}
+	,iterator_at: function(ind) {
+		var ret = this.head;
+		while(ind-- > 0 && ret != null) ret = ret.next;
+		return ret;
+	}
+	,at: function(ind) {
+		var it = this.iterator_at(ind);
+		if(it != null) {
+			return it.elt;
+		} else {
+			return null;
+		}
+	}
+	,__class__: zpp_$nape_util_ZNPList_$ZPP_$Constraint
+};
+var zpp_$nape_util_ZNPList_$ZPP_$Interactor = function() {
+	this.length = 0;
+	this.pushmod = false;
+	this.modified = false;
+	this.head = null;
+};
+$hxClasses["zpp_nape.util.ZNPList_ZPP_Interactor"] = zpp_$nape_util_ZNPList_$ZPP_$Interactor;
+zpp_$nape_util_ZNPList_$ZPP_$Interactor.__name__ = "zpp_nape.util.ZNPList_ZPP_Interactor";
+zpp_$nape_util_ZNPList_$ZPP_$Interactor.prototype = {
+	head: null
+	,begin: function() {
+		return this.head;
+	}
+	,modified: null
+	,pushmod: null
+	,length: null
+	,setbegin: function(i) {
+		this.head = i;
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,inlined_add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,addAll: function(x) {
+		var cx_ite = x.head;
+		while(cx_ite != null) {
+			var i = cx_ite.elt;
+			this.add(i);
+			cx_ite = cx_ite.next;
+		}
+	}
+	,insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,inlined_insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,inlined_pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,inlined_pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				this.erase(pre);
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,inlined_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,inlined_try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,inlined_erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,splice: function(pre,n) {
+		while(n-- > 0 && pre.next != null) this.erase(pre);
+		return pre.next;
+	}
+	,clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,inlined_clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,reverse: function() {
+		var cur = this.head;
+		var pre = null;
+		while(cur != null) {
+			var nx = cur.next;
+			cur.next = pre;
+			this.head = cur;
+			pre = cur;
+			cur = nx;
+		}
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,empty: function() {
+		return this.head == null;
+	}
+	,size: function() {
+		return this.length;
+	}
+	,has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,inlined_has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,front: function() {
+		return this.head.elt;
+	}
+	,back: function() {
+		var ret = this.head;
+		var cur = ret;
+		while(cur != null) {
+			ret = cur;
+			cur = cur.next;
+		}
+		return ret.elt;
+	}
+	,iterator_at: function(ind) {
+		var ret = this.head;
+		while(ind-- > 0 && ret != null) ret = ret.next;
+		return ret;
+	}
+	,at: function(ind) {
+		var it = this.iterator_at(ind);
+		if(it != null) {
+			return it.elt;
+		} else {
+			return null;
+		}
+	}
+	,__class__: zpp_$nape_util_ZNPList_$ZPP_$Interactor
+};
+var zpp_$nape_util_ZNPList_$ZPP_$CbSet = function() {
+	this.length = 0;
+	this.pushmod = false;
+	this.modified = false;
+	this.head = null;
+};
+$hxClasses["zpp_nape.util.ZNPList_ZPP_CbSet"] = zpp_$nape_util_ZNPList_$ZPP_$CbSet;
+zpp_$nape_util_ZNPList_$ZPP_$CbSet.__name__ = "zpp_nape.util.ZNPList_ZPP_CbSet";
+zpp_$nape_util_ZNPList_$ZPP_$CbSet.prototype = {
+	head: null
+	,begin: function() {
+		return this.head;
+	}
+	,modified: null
+	,pushmod: null
+	,length: null
+	,setbegin: function(i) {
+		this.head = i;
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,inlined_add: function(o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		temp.next = this.head;
+		this.head = temp;
+		this.modified = true;
+		this.length++;
+		return o;
+	}
+	,addAll: function(x) {
+		var cx_ite = x.head;
+		while(cx_ite != null) {
+			var i = cx_ite.elt;
+			this.add(i);
+			cx_ite = cx_ite.next;
+		}
+	}
+	,insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,inlined_insert: function(cur,o) {
+		var ret;
+		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
+			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
+		} else {
+			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
+			ret.next = null;
+		}
+		ret.elt = o;
+		var temp = ret;
+		if(cur == null) {
+			temp.next = this.head;
+			this.head = temp;
+		} else {
+			temp.next = cur.next;
+			cur.next = temp;
+		}
+		this.pushmod = this.modified = true;
+		this.length++;
+		return temp;
+	}
+	,pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,inlined_pop: function() {
+		var ret = this.head;
+		this.head = ret.next;
+		var o = ret;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+		if(this.head == null) {
+			this.pushmod = true;
+		}
+		this.modified = true;
+		this.length--;
+	}
+	,pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,inlined_pop_unsafe: function() {
+		var ret = this.head.elt;
+		this.pop();
+		return ret;
+	}
+	,remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				this.erase(pre);
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,inlined_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+	}
+	,inlined_try_remove: function(obj) {
+		var pre = null;
+		var cur = this.head;
+		var ret = false;
+		while(cur != null) {
+			if(cur.elt == obj) {
+				var old;
+				var ret1;
+				if(pre == null) {
+					old = this.head;
+					ret1 = old.next;
+					this.head = ret1;
+					if(this.head == null) {
+						this.pushmod = true;
+					}
+				} else {
+					old = pre.next;
+					ret1 = old.next;
+					pre.next = ret1;
+					if(ret1 == null) {
+						this.pushmod = true;
+					}
+				}
+				var o = old;
+				o.elt = null;
+				o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+				zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+				this.modified = true;
+				this.length--;
+				this.pushmod = true;
+				ret = true;
+				break;
+			}
+			pre = cur;
+			cur = cur.next;
+		}
+		return ret;
+	}
+	,erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,inlined_erase: function(pre) {
+		var old;
+		var ret;
+		if(pre == null) {
+			old = this.head;
+			ret = old.next;
+			this.head = ret;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+		} else {
+			old = pre.next;
+			ret = old.next;
+			pre.next = ret;
+			if(ret == null) {
+				this.pushmod = true;
+			}
+		}
+		var o = old;
+		o.elt = null;
+		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+		this.modified = true;
+		this.length--;
+		this.pushmod = true;
+		return ret;
+	}
+	,splice: function(pre,n) {
+		while(n-- > 0 && pre.next != null) this.erase(pre);
+		return pre.next;
+	}
+	,clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,inlined_clear: function() {
+		while(this.head != null) {
+			var ret = this.head;
+			this.head = ret.next;
+			var o = ret;
+			o.elt = null;
+			o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
+			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
+			if(this.head == null) {
+				this.pushmod = true;
+			}
+			this.modified = true;
+			this.length--;
+		}
+		this.pushmod = true;
+	}
+	,reverse: function() {
+		var cur = this.head;
+		var pre = null;
+		while(cur != null) {
+			var nx = cur.next;
+			cur.next = pre;
+			this.head = cur;
+			pre = cur;
+			cur = nx;
+		}
+		this.modified = true;
+		this.pushmod = true;
+	}
+	,empty: function() {
+		return this.head == null;
+	}
+	,size: function() {
+		return this.length;
+	}
+	,has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,inlined_has: function(obj) {
+		var ret;
+		ret = false;
+		var cx_ite = this.head;
+		while(cx_ite != null) {
+			var npite = cx_ite.elt;
+			if(npite == obj) {
+				ret = true;
+				break;
+			}
+			cx_ite = cx_ite.next;
+		}
+		return ret;
+	}
+	,front: function() {
+		return this.head.elt;
+	}
+	,back: function() {
+		var ret = this.head;
+		var cur = ret;
+		while(cur != null) {
+			ret = cur;
+			cur = cur.next;
+		}
+		return ret.elt;
+	}
+	,iterator_at: function(ind) {
+		var ret = this.head;
+		while(ind-- > 0 && ret != null) ret = ret.next;
+		return ret;
+	}
+	,at: function(ind) {
+		var it = this.iterator_at(ind);
+		if(it != null) {
+			return it.elt;
+		} else {
+			return null;
+		}
+	}
+	,__class__: zpp_$nape_util_ZNPList_$ZPP_$CbSet
+};
+var Character = function(width,height,xPos,yPos,color,angularVel,withHealthBar) {
+	if(withHealthBar == null) {
+		withHealthBar = false;
+	}
+	if(angularVel == null) {
+		angularVel = 0;
+	}
+	this.rotationSnapSpeed = 0.1;
+	this.rotationSnapAngle = 2 * Math.PI / 180;
+	this.rotationMaxSpeed = 8.0;
+	this.rotationKd = 4.0;
+	this.rotationKp = 12.0;
+	this.minSpeed = 0;
+	this.deceleration = 500;
+	this.healthBar = null;
+	this.currentHealth = 100;
+	this.maxHealth = 100;
+	flixel_addons_nape_FlxNapeSprite.call(this);
+	this.makeGraphic(width,height,color);
+	this.createRectangularBody();
+	this.set_antialiasing(true);
+	var _this = this.body;
+	if(_this.zpp_inner.angvel != angularVel) {
+		_this.zpp_inner.angvel = angularVel;
+		_this.zpp_inner.wake();
+	}
+	this.scale.set_x(1);
+	this.scale.set_y(1);
+	this.set_flipX(flixel_FlxG.random.float(0,100) < 50);
+	this.set_flipY(flixel_FlxG.random.float(0,100) < 50);
+	this.setBodyMaterial(.5,.5,.5,2);
+	var _this = this.body;
+	if(_this.zpp_inner.wrap_pos == null) {
+		_this.zpp_inner.setupPosition();
+	}
+	var _this1 = _this.zpp_inner.wrap_pos;
+	var _this = _this1.zpp_inner;
+	if(_this._validate != null) {
+		_this._validate();
+	}
+	if(_this1.zpp_inner.y != yPos) {
+		_this1.zpp_inner.y = yPos;
+		var _this = _this1.zpp_inner;
+		if(_this._invalidate != null) {
+			_this._invalidate(_this);
+		}
+	}
+	var _this = _this1.zpp_inner;
+	if(_this._validate != null) {
+		_this._validate();
+	}
+	var _this = this.body;
+	if(_this.zpp_inner.wrap_pos == null) {
+		_this.zpp_inner.setupPosition();
+	}
+	var _this1 = _this.zpp_inner.wrap_pos;
+	var _this = _this1.zpp_inner;
+	if(_this._validate != null) {
+		_this._validate();
+	}
+	if(_this1.zpp_inner.x != xPos) {
+		_this1.zpp_inner.x = xPos;
+		var _this = _this1.zpp_inner;
+		if(_this._invalidate != null) {
+			_this._invalidate(_this);
+		}
+	}
+	var _this = _this1.zpp_inner;
+	if(_this._validate != null) {
+		_this._validate();
+	}
+	if(withHealthBar) {
+		this.healthBar = new HealthBar(this);
+		this.healthBar.maxHealth = this.maxHealth;
+		this.healthBar.currentHealth = this.currentHealth;
+		this.healthBar.updateHealthBar();
+	}
+};
+$hxClasses["Character"] = Character;
+Character.__name__ = "Character";
+Character.__super__ = flixel_addons_nape_FlxNapeSprite;
+Character.prototype = $extend(flixel_addons_nape_FlxNapeSprite.prototype,{
+	maxHealth: null
+	,currentHealth: null
+	,healthBar: null
+	,deceleration: null
+	,minSpeed: null
+	,rotationKp: null
+	,rotationKd: null
+	,rotationMaxSpeed: null
+	,rotationSnapAngle: null
+	,rotationSnapSpeed: null
+	,applyDamage: function(damage) {
+		this.currentHealth -= damage;
+		if(this.healthBar != null) {
+			this.healthBar.currentHealth = this.currentHealth;
+		}
+		if(this.currentHealth <= 0) {
+			return true;
+		}
+		if(this.healthBar != null) {
+			this.healthBar.updateHealthBar();
+		}
+		return false;
+	}
+	,setCollision: function(group,mask,cbType) {
+		this.body.setShapeFilters(new nape_dynamics_InteractionFilter(group,mask));
+		var _this = this.body;
+		if(_this.zpp_inner_i.wrap_cbTypes == null) {
+			_this.zpp_inner_i.setupcbTypes();
+		}
+		var _this1 = _this.zpp_inner_i.wrap_cbTypes;
+		if(_this1.zpp_inner.reverse_flag) {
+			_this1.push(cbType);
+		} else {
+			_this1.unshift(cbType);
+		}
+	}
+	,updateHealthBar: function() {
+		if(this.healthBar != null) {
+			this.healthBar.updateHealthBar();
+		}
+	}
+	,applyDeceleration: function(elapsed) {
+		var _this = this.body;
+		if(_this.zpp_inner.wrap_vel == null) {
+			_this.zpp_inner.setupVelocity();
+		}
+		var currentVelocity = _this.zpp_inner.wrap_vel;
+		var _this = currentVelocity.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var currentSpeed = currentVelocity.zpp_inner.x;
+		var _this = currentVelocity.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var currentSpeed1 = currentSpeed * currentVelocity.zpp_inner.x;
+		var _this = currentVelocity.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var currentSpeed = currentVelocity.zpp_inner.y;
+		var _this = currentVelocity.zpp_inner;
+		if(_this._validate != null) {
+			_this._validate();
+		}
+		var currentSpeed2 = Math.sqrt(currentSpeed1 + currentSpeed * currentVelocity.zpp_inner.y);
+		if(currentSpeed2 > this.minSpeed) {
+			var newSpeed = currentSpeed2 - this.deceleration * elapsed;
+			if(newSpeed <= this.minSpeed) {
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var tmp;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(_this1.zpp_inner.x == 0) {
+					var _this = _this1.zpp_inner;
+					if(_this._validate != null) {
+						_this._validate();
+					}
+					tmp = _this1.zpp_inner.y == 0;
+				} else {
+					tmp = false;
+				}
+				if(!tmp) {
+					_this1.zpp_inner.x = 0;
+					_this1.zpp_inner.y = 0;
+					var _this = _this1.zpp_inner;
+					if(_this._invalidate != null) {
+						_this._invalidate(_this);
+					}
+				}
+			} else {
+				var normalizedVel = currentVelocity.normalise();
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = normalizedVel.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var x = normalizedVel.zpp_inner.x * newSpeed;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(_this1.zpp_inner.x != x) {
+					_this1.zpp_inner.x = x;
+					var _this = _this1.zpp_inner;
+					if(_this._invalidate != null) {
+						_this._invalidate(_this);
+					}
+				}
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var _this = this.body;
+				if(_this.zpp_inner.wrap_vel == null) {
+					_this.zpp_inner.setupVelocity();
+				}
+				var _this1 = _this.zpp_inner.wrap_vel;
+				var _this = normalizedVel.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				var y = normalizedVel.zpp_inner.y * newSpeed;
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				if(_this1.zpp_inner.y != y) {
+					_this1.zpp_inner.y = y;
+					var _this = _this1.zpp_inner;
+					if(_this._invalidate != null) {
+						_this._invalidate(_this);
+					}
+				}
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+			}
+		} else {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var tmp;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(_this1.zpp_inner.x == 0) {
+				var _this = _this1.zpp_inner;
+				if(_this._validate != null) {
+					_this._validate();
+				}
+				tmp = _this1.zpp_inner.y == 0;
+			} else {
+				tmp = false;
+			}
+			if(!tmp) {
+				_this1.zpp_inner.x = 0;
+				_this1.zpp_inner.y = 0;
+				var _this = _this1.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+		}
+	}
+	,applyRotationDeceleration: function(elapsed) {
+		var currentAngularVel = this.body.zpp_inner.angvel;
+		var currentRotation = this.body.zpp_inner.rot;
+		var angleError = -currentRotation;
+		angleError = Math.atan2(Math.sin(angleError),Math.cos(angleError));
+		var desiredAngularAcc = this.rotationKp * angleError - this.rotationKd * currentAngularVel;
+		var newAngularVel = currentAngularVel + desiredAngularAcc * elapsed;
+		if(newAngularVel > this.rotationMaxSpeed) {
+			newAngularVel = this.rotationMaxSpeed;
+		} else if(newAngularVel < -this.rotationMaxSpeed) {
+			newAngularVel = -this.rotationMaxSpeed;
+		}
+		if(Math.abs(angleError) <= this.rotationSnapAngle && Math.abs(newAngularVel) <= this.rotationSnapSpeed) {
+			var _this = this.body;
+			_this.zpp_inner.immutable_midstep("Body::rotation");
+			if(_this.zpp_inner.rot != 0) {
+				_this.zpp_inner.rot = 0;
+				var _this1 = _this.zpp_inner;
+				_this1.zip_axis = true;
+				var cx_ite = _this1.shapes.head;
+				while(cx_ite != null) {
+					var s = cx_ite.elt;
+					if(s.type == 1) {
+						s.polygon.invalidate_gverts();
+						s.polygon.invalidate_gaxi();
+					}
+					s.invalidate_worldCOM();
+					cx_ite = cx_ite.next;
+				}
+				_this1.zip_worldCOM = true;
+				_this.zpp_inner.wake();
+			}
+			var _this = this.body;
+			if(_this.zpp_inner.angvel != 0) {
+				_this.zpp_inner.angvel = 0;
+				_this.zpp_inner.wake();
+			}
+		} else {
+			var _this = this.body;
+			if(_this.zpp_inner.angvel != newAngularVel) {
+				_this.zpp_inner.angvel = newAngularVel;
+				_this.zpp_inner.wake();
+			}
+		}
+	}
+	,__class__: Character
+});
+var EReg = function(r,opt) {
+	this.r = new RegExp(r,opt.split("u").join(""));
+};
+$hxClasses["EReg"] = EReg;
+EReg.__name__ = "EReg";
+EReg.prototype = {
+	r: null
+	,match: function(s) {
+		if(this.r.global) {
+			this.r.lastIndex = 0;
+		}
+		this.r.m = this.r.exec(s);
+		this.r.s = s;
+		return this.r.m != null;
+	}
+	,matched: function(n) {
+		if(this.r.m != null && n >= 0 && n < this.r.m.length) {
+			return this.r.m[n];
+		} else {
+			throw haxe_Exception.thrown("EReg::matched");
+		}
+	}
+	,matchedRight: function() {
+		if(this.r.m == null) {
+			throw haxe_Exception.thrown("No string matched");
+		}
+		var sz = this.r.m.index + this.r.m[0].length;
+		return HxOverrides.substr(this.r.s,sz,this.r.s.length - sz);
+	}
+	,matchedPos: function() {
+		if(this.r.m == null) {
+			throw haxe_Exception.thrown("No string matched");
+		}
+		return { pos : this.r.m.index, len : this.r.m[0].length};
+	}
+	,matchSub: function(s,pos,len) {
+		if(len == null) {
+			len = -1;
+		}
+		if(this.r.global) {
+			this.r.lastIndex = pos;
+			this.r.m = this.r.exec(len < 0 ? s : HxOverrides.substr(s,0,pos + len));
+			var b = this.r.m != null;
+			if(b) {
+				this.r.s = s;
+			}
+			return b;
+		} else {
+			var b = this.match(len < 0 ? HxOverrides.substr(s,pos,null) : HxOverrides.substr(s,pos,len));
+			if(b) {
+				this.r.s = s;
+				this.r.m.index += pos;
+			}
+			return b;
+		}
+	}
+	,split: function(s) {
+		var d = "#__delim__#";
+		return s.replace(this.r,d).split(d);
+	}
+	,map: function(s,f) {
+		var offset = 0;
+		var buf_b = "";
+		do {
+			if(offset >= s.length) {
+				break;
+			} else if(!this.matchSub(s,offset)) {
+				buf_b += Std.string(HxOverrides.substr(s,offset,null));
+				break;
+			}
+			var p = this.matchedPos();
+			buf_b += Std.string(HxOverrides.substr(s,offset,p.pos - offset));
+			buf_b += Std.string(f(this));
+			if(p.len == 0) {
+				buf_b += Std.string(HxOverrides.substr(s,p.pos,1));
+				offset = p.pos + 1;
+			} else {
+				offset = p.pos + p.len;
+			}
+		} while(this.r.global);
+		if(!this.r.global && offset > 0 && offset < s.length) {
+			buf_b += Std.string(HxOverrides.substr(s,offset,null));
+		}
+		return buf_b;
+	}
+	,__class__: EReg
+};
+var Enemy = function(width,height,xPos,yPos) {
+	Character.call(this,width,height,xPos,yPos,-7650029,10,true);
+	this.setCollision(512,-1,Character.CB_TARGET);
+};
+$hxClasses["Enemy"] = Enemy;
+Enemy.__name__ = "Enemy";
+Enemy.__super__ = Character;
+Enemy.prototype = $extend(Character.prototype,{
+	__class__: Enemy
+});
+var HxOverrides = function() { };
+$hxClasses["HxOverrides"] = HxOverrides;
+HxOverrides.__name__ = "HxOverrides";
+HxOverrides.strDate = function(s) {
+	switch(s.length) {
+	case 8:
+		var k = s.split(":");
+		var d = new Date();
+		d["setTime"](0);
+		d["setUTCHours"](k[0]);
+		d["setUTCMinutes"](k[1]);
+		d["setUTCSeconds"](k[2]);
+		return d;
+	case 10:
+		var k = s.split("-");
+		return new Date(k[0],k[1] - 1,k[2],0,0,0);
+	case 19:
+		var k = s.split(" ");
+		var y = k[0].split("-");
+		var t = k[1].split(":");
+		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
+	default:
+		throw haxe_Exception.thrown("Invalid date format : " + s);
+	}
+};
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
+HxOverrides.substr = function(s,pos,len) {
+	if(len == null) {
+		len = s.length;
+	} else if(len < 0) {
+		if(pos == 0) {
+			len = s.length + len;
+		} else {
+			return "";
+		}
+	}
+	return s.substr(pos,len);
+};
+HxOverrides.remove = function(a,obj) {
+	var i = a.indexOf(obj);
+	if(i == -1) {
+		return false;
+	}
+	a.splice(i,1);
+	return true;
+};
+HxOverrides.now = function() {
+	return Date.now();
+};
+var IntIterator = function(min,max) {
+	this.min = min;
+	this.max = max;
+};
+$hxClasses["IntIterator"] = IntIterator;
+IntIterator.__name__ = "IntIterator";
+IntIterator.prototype = {
+	min: null
+	,max: null
+	,hasNext: function() {
+		return this.min < this.max;
+	}
+	,next: function() {
+		return this.min++;
+	}
+	,__class__: IntIterator
+};
+var Lambda = function() { };
+$hxClasses["Lambda"] = Lambda;
+Lambda.__name__ = "Lambda";
+Lambda.array = function(it) {
+	var a = [];
+	var i = $getIterator(it);
+	while(i.hasNext()) {
+		var i1 = i.next();
+		a.push(i1);
+	}
+	return a;
+};
+Lambda.count = function(it,pred) {
+	var n = 0;
+	if(pred == null) {
+		var _ = $getIterator(it);
+		while(_.hasNext()) {
+			var _1 = _.next();
+			++n;
+		}
+	} else {
+		var x = $getIterator(it);
+		while(x.hasNext()) {
+			var x1 = x.next();
+			if(pred(x1)) {
+				++n;
+			}
+		}
+	}
+	return n;
+};
+var ManifestResources = function() { };
+$hxClasses["ManifestResources"] = ManifestResources;
+ManifestResources.__name__ = "ManifestResources";
+ManifestResources.preloadLibraries = null;
+ManifestResources.preloadLibraryNames = null;
+ManifestResources.rootPath = null;
+ManifestResources.init = function(config) {
+	ManifestResources.preloadLibraries = [];
+	ManifestResources.preloadLibraryNames = [];
+	ManifestResources.rootPath = null;
+	if(config != null && Object.prototype.hasOwnProperty.call(config,"rootPath")) {
+		ManifestResources.rootPath = Reflect.field(config,"rootPath");
+		if(!StringTools.endsWith(ManifestResources.rootPath,"/")) {
+			ManifestResources.rootPath += "/";
+		}
+	}
+	if(ManifestResources.rootPath == null) {
+		ManifestResources.rootPath = "./";
+	}
+	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf);
+	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf);
+	var bundle;
+	var data = "{\"name\":null,\"assets\":\"aoy4:pathy27:assets%2Fimages%2Fblood.pngy4:sizei8203y4:typey5:IMAGEy2:idR1y7:preloadtgoR0y33:assets%2Fimages%2FPatagonia30.jpgR2i1334R3R4R5R7R6tgoR0y26:assets%2Fimages%2Fwall.pngR2i5753R3R4R5R8R6tgoR0y36:assets%2Fimages%2Fimages-go-here.txtR2zR3y4:TEXTR5R9R6tgoR0y32:assets%2Fimages%2Fsoldier.png%7ER2i274R3y6:BINARYR5R11R6tgoR0y47:assets%2Fimages%2Fchaos-marine-sprite-sheet.pngR2i246689R3R4R5R13R6tgoR0y29:assets%2Fimages%2Fterrain.pngR2i129353R3R4R5R14R6tgoR0y26:assets%2Fimages%2Ftest.pngR2i87056R3R4R5R15R6tgoR0y30:assets%2Fimages%2Fblood.png%7ER2i5054R3R12R5R16R6tgoR0y29:assets%2Fimages%2Fsoldier.pngR2i308R3R4R5R17R6tgoR0y29:assets%2Fimages%2Ftest.png%7ER2i73026R3R12R5R18R6tgoR0y47:assets%2Fimages%2Fspace-marine-sprite-sheet.pngR2i302727R3R4R5R19R6tgoR0y36:assets%2Fsounds%2Fsounds-go-here.txtR2zR3R10R5R20R6tgoR0y34:assets%2Fdata%2Fdata-goes-here.txtR2zR3R10R5R21R6tgoR0y36:assets%2Fmusic%2Fmusic-goes-here.txtR2zR3R10R5R22R6tgoR2i39706R3y5:MUSICR5y28:flixel%2Fsounds%2Fflixel.mp3y9:pathGroupaR24y28:flixel%2Fsounds%2Fflixel.ogghR6tgoR2i8220R3R23R5y26:flixel%2Fsounds%2Fbeep.mp3R25aR27y26:flixel%2Fsounds%2Fbeep.ogghR6tgoR2i33629R3y5:SOUNDR5R26R25aR24R26hgoR2i6840R3R29R5R28R25aR27R28hgoR2i15744R3y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR5y30:flixel%2Ffonts%2Fnokiafc22.ttfR6tgoR2i29724R3R30R31y36:__ASSET__flixel_fonts_monsterrat_ttfR5y31:flixel%2Ffonts%2Fmonsterrat.ttfR6tgoR0y33:flixel%2Fimages%2Fui%2Fbutton.pngR2i277R3R4R5R36R6tgoR0y36:flixel%2Fimages%2Flogo%2Fdefault.pngR2i505R3R4R5R37R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fsquare.pngR2i209R3R4R5R38R6tgoR0y53:flixel%2Fimages%2Ftransitions%2Fdiagonal_gradient.pngR2i730R3R4R5R39R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fcircle.pngR2i299R3R4R5R40R6tgoR0y43:flixel%2Fimages%2Ftransitions%2Fdiamond.pngR2i236R3R4R5R41R6tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	var manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
+	var library = lime_utils_AssetLibrary.fromManifest(manifest);
+	lime_utils_Assets.registerLibrary("default",library);
+	library = lime_utils_Assets.getLibrary("default");
+	if(library != null) {
+		ManifestResources.preloadLibraries.push(library);
+	} else {
+		ManifestResources.preloadLibraryNames.push("default");
+	}
+};
+var lime_text_Font = function(name) {
+	if(name != null) {
+		this.name = name;
+	}
+	if(!this.__init) {
+		if(this.ascender == undefined) {
+			this.ascender = 0;
+		}
+		if(this.descender == undefined) {
+			this.descender = 0;
+		}
+		if(this.height == undefined) {
+			this.height = 0;
+		}
+		if(this.numGlyphs == undefined) {
+			this.numGlyphs = 0;
+		}
+		if(this.underlinePosition == undefined) {
+			this.underlinePosition = 0;
+		}
+		if(this.underlineThickness == undefined) {
+			this.underlineThickness = 0;
+		}
+		if(this.unitsPerEM == undefined) {
+			this.unitsPerEM = 0;
+		}
+		if(this.__fontID != null) {
+			if(lime_utils_Assets.isLocal(this.__fontID)) {
+				this.__fromBytes(lime_utils_Assets.getBytes(this.__fontID));
+			}
+		} else if(this.__fontPath != null) {
+			this.__fromFile(this.__fontPath);
+		}
+	}
+};
+$hxClasses["lime.text.Font"] = lime_text_Font;
+lime_text_Font.__name__ = "lime.text.Font";
+lime_text_Font.fromBytes = function(bytes) {
+	if(bytes == null) {
+		return null;
+	}
+	var font = new lime_text_Font();
+	font.__fromBytes(bytes);
+	return font;
+};
+lime_text_Font.fromFile = function(path) {
+	if(path == null) {
+		return null;
+	}
+	var font = new lime_text_Font();
+	font.__fromFile(path);
+	return font;
+};
+lime_text_Font.loadFromBytes = function(bytes) {
+	return lime_app_Future.withValue(lime_text_Font.fromBytes(bytes));
+};
+lime_text_Font.loadFromFile = function(path) {
+	var request = new lime_net__$HTTPRequest_$lime_$text_$Font();
+	return request.load(path).then(function(font) {
+		if(font != null) {
+			return lime_app_Future.withValue(font);
+		} else {
+			return lime_app_Future.withError("");
+		}
+	});
+};
+lime_text_Font.loadFromName = function(path) {
+	var font = new lime_text_Font();
+	return font.__loadFromName(path);
+};
+lime_text_Font.__measureFontNode = function(fontFamily) {
+	var node = window.document.createElement("span");
+	node.setAttribute("aria-hidden","true");
+	var text = window.document.createTextNode("BESbswy");
+	node.appendChild(text);
+	var style = node.style;
+	style.display = "block";
+	style.position = "absolute";
+	style.top = "-9999px";
+	style.left = "-9999px";
+	style.fontSize = "300px";
+	style.width = "auto";
+	style.height = "auto";
+	style.lineHeight = "normal";
+	style.margin = "0";
+	style.padding = "0";
+	style.fontVariant = "normal";
+	style.whiteSpace = "nowrap";
+	style.fontFamily = fontFamily;
+	window.document.body.appendChild(node);
+	return node;
+};
+lime_text_Font.prototype = {
+	ascender: null
+	,descender: null
+	,height: null
+	,name: null
+	,numGlyphs: null
+	,src: null
+	,underlinePosition: null
+	,underlineThickness: null
+	,unitsPerEM: null
+	,__fontID: null
+	,__fontPath: null
+	,__init: null
+	,decompose: function() {
+		return null;
+	}
+	,getGlyph: function(character) {
+		return -1;
+	}
+	,getGlyphs: function(characters) {
+		if(characters == null) {
+			characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^`'\"/\\&*()[]{}<>|:;_-+=?,. ";
+		}
+		return null;
+	}
+	,getGlyphMetrics: function(glyph) {
+		return null;
+	}
+	,renderGlyph: function(glyph,fontSize) {
+		return null;
+	}
+	,renderGlyphs: function(glyphs,fontSize) {
+		return null;
+	}
+	,__copyFrom: function(other) {
+		if(other != null) {
+			this.ascender = other.ascender;
+			this.descender = other.descender;
+			this.height = other.height;
+			this.name = other.name;
+			this.numGlyphs = other.numGlyphs;
+			this.src = other.src;
+			this.underlinePosition = other.underlinePosition;
+			this.underlineThickness = other.underlineThickness;
+			this.unitsPerEM = other.unitsPerEM;
+			this.__fontID = other.__fontID;
+			this.__fontPath = other.__fontPath;
+			this.__init = true;
+		}
+	}
+	,__fromBytes: function(bytes) {
+		this.__fontPath = null;
+	}
+	,__fromFile: function(path) {
+		this.__fontPath = path;
+	}
+	,__initializeSource: function() {
+		this.__init = true;
+	}
+	,__loadFromName: function(name) {
+		var _gthis = this;
+		var promise = new lime_app_Promise();
+		this.name = name;
+		var userAgent = $global.navigator.userAgent.toLowerCase();
+		var isSafari = userAgent.indexOf(" safari/") >= 0 && userAgent.indexOf(" chrome/") < 0;
+		var isUIWebView = new EReg("(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)","i").match(userAgent);
+		if(!isSafari && !isUIWebView && (window.document.fonts && ($_=window.document.fonts,$bind($_,$_.load)))) {
+			window.document.fonts.load("1em '" + name + "'").then(function(_) {
+				promise.complete(_gthis);
+			},function(_) {
+				lime_utils_Log.warn("Could not load web font \"" + name + "\"",{ fileName : "lime/text/Font.hx", lineNumber : 640, className : "lime.text.Font", methodName : "__loadFromName"});
+				promise.complete(_gthis);
+			});
+		} else {
+			var node1 = lime_text_Font.__measureFontNode("'" + name + "', sans-serif");
+			var node2 = lime_text_Font.__measureFontNode("'" + name + "', serif");
+			var width1 = node1.offsetWidth;
+			var width2 = node2.offsetWidth;
+			var interval = -1;
+			var timeout = 3000;
+			var intervalLength = 50;
+			var intervalCount = 0;
+			var loaded;
+			var timeExpired;
+			var checkFont = function() {
+				intervalCount += 1;
+				loaded = node1.offsetWidth != width1 || node2.offsetWidth != width2;
+				timeExpired = intervalCount * intervalLength >= timeout;
+				if(loaded || timeExpired) {
+					window.clearInterval(interval);
+					node1.parentNode.removeChild(node1);
+					node2.parentNode.removeChild(node2);
+					node1 = null;
+					node2 = null;
+					if(timeExpired) {
+						lime_utils_Log.warn("Could not load web font \"" + name + "\"",{ fileName : "lime/text/Font.hx", lineNumber : 675, className : "lime.text.Font", methodName : "__loadFromName"});
+					}
+					promise.complete(_gthis);
+				}
+			};
+			interval = window.setInterval(checkFont,intervalLength);
+		}
+		return promise.future;
+	}
+	,__setSize: function(size,dpi) {
+		if(dpi == null) {
+			dpi = 72;
+		}
+	}
+	,__class__: lime_text_Font
+};
+var _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf = $hx_exports["__ASSET__flixel_fonts_nokiafc22_ttf"] = function() {
+	this.ascender = 2048;
+	this.descender = -512;
+	this.height = 2816;
+	this.numGlyphs = 172;
+	this.underlinePosition = -640;
+	this.underlineThickness = 256;
+	this.unitsPerEM = 2048;
+	this.name = "Nokia Cellphone FC Small";
+	lime_text_Font.call(this);
+};
+$hxClasses["__ASSET__flixel_fonts_nokiafc22_ttf"] = _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf;
+_$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf.__name__ = "__ASSET__flixel_fonts_nokiafc22_ttf";
+_$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf.__super__ = lime_text_Font;
+_$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf.prototype = $extend(lime_text_Font.prototype,{
+	__class__: _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf
+});
+var _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf = $hx_exports["__ASSET__flixel_fonts_monsterrat_ttf"] = function() {
+	this.ascender = 968;
+	this.descender = -251;
+	this.height = 1219;
+	this.numGlyphs = 263;
+	this.underlinePosition = -150;
+	this.underlineThickness = 50;
+	this.unitsPerEM = 1000;
+	this.name = "Monsterrat";
+	lime_text_Font.call(this);
+};
+$hxClasses["__ASSET__flixel_fonts_monsterrat_ttf"] = _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf;
+_$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf.__name__ = "__ASSET__flixel_fonts_monsterrat_ttf";
+_$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf.__super__ = lime_text_Font;
+_$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf.prototype = $extend(lime_text_Font.prototype,{
+	__class__: _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf
+});
+var openfl_text_Font = function(name) {
+	lime_text_Font.call(this,name);
+};
+$hxClasses["openfl.text.Font"] = openfl_text_Font;
+openfl_text_Font.__name__ = "openfl.text.Font";
+openfl_text_Font.enumerateFonts = function(enumerateDeviceFonts) {
+	if(enumerateDeviceFonts == null) {
+		enumerateDeviceFonts = false;
+	}
+	return openfl_text_Font.__registeredFonts;
+};
+openfl_text_Font.fromBytes = function(bytes) {
+	var font = new openfl_text_Font();
+	font.__fromBytes(openfl_utils_ByteArray.toBytes(bytes));
+	return font;
+};
+openfl_text_Font.fromFile = function(path) {
+	if(path == null) {
+		return null;
+	}
+	var font = new openfl_text_Font();
+	font.__fromFile(path);
+	return font;
+};
+openfl_text_Font.loadFromBytes = function(bytes) {
+	return lime_text_Font.loadFromBytes(openfl_utils_ByteArray.toBytes(bytes)).then(function(limeFont) {
+		var font = new openfl_text_Font();
+		font.__fromLimeFont(limeFont);
+		return lime_app_Future.withValue(font);
+	});
+};
+openfl_text_Font.loadFromFile = function(path) {
+	return lime_text_Font.loadFromFile(path).then(function(limeFont) {
+		var font = new openfl_text_Font();
+		font.__fromLimeFont(limeFont);
+		return lime_app_Future.withValue(font);
+	});
+};
+openfl_text_Font.loadFromName = function(path) {
+	return lime_text_Font.loadFromName(path).then(function(limeFont) {
+		var font = new openfl_text_Font();
+		font.__fromLimeFont(limeFont);
+		return lime_app_Future.withValue(font);
+	});
+};
+openfl_text_Font.registerFont = function(font) {
+	var instance = null;
+	if(js_Boot.getClass(font) == null) {
+		instance = js_Boot.__cast(Type.createInstance(font,[]) , openfl_text_Font);
+	} else {
+		instance = js_Boot.__cast(font , openfl_text_Font);
+	}
+	if(instance != null) {
+		openfl_text_Font.__registeredFonts.push(instance);
+		openfl_text_Font.__fontByName.h[instance.name] = instance;
+	}
+};
+openfl_text_Font.__super__ = lime_text_Font;
+openfl_text_Font.prototype = $extend(lime_text_Font.prototype,{
+	fontStyle: null
+	,fontType: null
+	,__initialized: null
+	,__fromLimeFont: function(font) {
+		this.__copyFrom(font);
+	}
+	,__initialize: function() {
+		return this.__initialized;
+	}
+	,get_fontName: function() {
+		return this.name;
+	}
+	,set_fontName: function(value) {
+		return this.name = value;
+	}
+	,__class__: openfl_text_Font
+	,__properties__: {set_fontName:"set_fontName",get_fontName:"get_fontName"}
+});
+var _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf = $hx_exports["__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf"] = function() {
+	this.__fromLimeFont(new _$_$ASSET_$_$flixel_$fonts_$nokiafc22_$ttf());
+	openfl_text_Font.call(this);
+};
+$hxClasses["__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf"] = _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf;
+_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf.__name__ = "__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf";
+_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf.__super__ = openfl_text_Font;
+_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf.prototype = $extend(openfl_text_Font.prototype,{
+	__class__: _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf
+});
+var _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf = $hx_exports["__ASSET__OPENFL__flixel_fonts_monsterrat_ttf"] = function() {
+	this.__fromLimeFont(new _$_$ASSET_$_$flixel_$fonts_$monsterrat_$ttf());
+	openfl_text_Font.call(this);
+};
+$hxClasses["__ASSET__OPENFL__flixel_fonts_monsterrat_ttf"] = _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf;
+_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.__name__ = "__ASSET__OPENFL__flixel_fonts_monsterrat_ttf";
+_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.__super__ = openfl_text_Font;
+_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.prototype = $extend(openfl_text_Font.prototype,{
+	__class__: _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf
+});
+Math.__name__ = "Math";
 var flixel_group_FlxTypedGroup = function(MaxSize) {
 	if(MaxSize == null) {
 		MaxSize = 0;
@@ -8336,19 +12160,6 @@ flixel_FlxState.prototype = $extend(flixel_group_FlxTypedContainer.prototype,{
 	,__properties__: $extend(flixel_group_FlxTypedContainer.prototype.__properties__,{get_subStateClosed:"get_subStateClosed",get_subStateOpened:"get_subStateOpened",set_bgColor:"set_bgColor",get_bgColor:"get_bgColor"})
 });
 var PlayState = function() {
-	this.isRotationSlowing = false;
-	this.isRotating = false;
-	this.rotationSnapSpeed = 0.1;
-	this.rotationSnapAngle = 2 * Math.PI / 180;
-	this.rotationMaxSpeed = 8.0;
-	this.rotationKd = 4.0;
-	this.rotationKp = 12.0;
-	this.rotationMinSpeed = 5;
-	this.rotationDeceleration = 120;
-	this.rotationSpeed = 180;
-	this.isSlowingDown = false;
-	this.playerMinSpeed = 10;
-	this.playerDeceleration = 500;
 	this.levels = 40;
 	flixel_FlxState.call(this);
 };
@@ -8366,27 +12177,13 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	,maxNumber: null
 	,levels: null
 	,bricks: null
-	,brickHealthBars: null
 	,shooter: null
 	,handJoint: null
 	,body: null
 	,brickHeight: null
 	,brickWidth: null
-	,playerDeceleration: null
-	,playerMinSpeed: null
-	,isSlowingDown: null
 	,layout: null
 	,stampedBricks: null
-	,rotationSpeed: null
-	,rotationDeceleration: null
-	,rotationMinSpeed: null
-	,rotationKp: null
-	,rotationKd: null
-	,rotationMaxSpeed: null
-	,rotationSnapAngle: null
-	,rotationSnapSpeed: null
-	,isRotating: null
-	,isRotationSlowing: null
 	,create: function() {
 		this.brickHeight = 16;
 		this.brickWidth = this.brickHeight;
@@ -8398,107 +12195,19 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this.stampedBricks = new flixel_group_FlxTypedGroup();
 		this.add(this.stampedBricks);
 		flixel_addons_nape_FlxNapeSpace.init();
+		var w = flixel_FlxG.width;
+		var h = flixel_FlxG.height;
+		var bit = openfl_utils_Assets.getBitmapData("assets/images/terrain.png");
+		this.terrain = new Terrain(bit,30,5);
+		this.terrain.invalidate(new nape_geom_AABB(0,0,w,h),this);
+		this.add(this.terrain.sprite);
 		this.shooter = new Shooter();
 		this.add(this.shooter);
 		this.walls = flixel_addons_nape_FlxNapeSpace.createWalls(0,0,640,480,10);
-		this.box = new flixel_addons_nape_FlxNapeSprite();
-		this.box.makeGraphic(32,32,-65281);
-		this.box.createRectangularBody();
-		this.box.set_antialiasing(true);
-		this.box.scale.set_x(1);
-		this.box.scale.set_y(1);
-		this.box.set_flipX(flixel_FlxG.random.float(0,100) < 50);
-		this.box.set_flipY(flixel_FlxG.random.float(0,100) < 50);
-		this.box.setBodyMaterial(.5,.5,.5,2);
-		var _this = this.box.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		if(_this1.zpp_inner.y != 48) {
-			_this1.zpp_inner.y = 48;
-			var _this = _this1.zpp_inner;
-			if(_this._invalidate != null) {
-				_this._invalidate(_this);
-			}
-		}
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var _this = this.box.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		if(_this1.zpp_inner.x != 48) {
-			_this1.zpp_inner.x = 48;
-			var _this = _this1.zpp_inner;
-			if(_this._invalidate != null) {
-				_this._invalidate(_this);
-			}
-		}
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
+		this.box = new Player(32,32,48,48);
 		this.add(this.box);
 		this.lazer = new photonstorm_FlxWeapon("lazer",this.box,"x","y");
-		this.surrounding = new flixel_addons_nape_FlxNapeSprite();
-		this.surrounding.makeGraphic(32,32,-65281);
-		this.surrounding.createRectangularBody();
-		this.surrounding.set_antialiasing(true);
-		this.surrounding.scale.set_x(1);
-		this.surrounding.scale.set_y(1);
-		this.surrounding.setBodyMaterial(.5,.5,.5,2);
-		var _this = this.surrounding.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		if(_this1.zpp_inner.y != 48) {
-			_this1.zpp_inner.y = 48;
-			var _this = _this1.zpp_inner;
-			if(_this._invalidate != null) {
-				_this._invalidate(_this);
-			}
-		}
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var _this = this.surrounding.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		if(_this1.zpp_inner.x != 48) {
-			_this1.zpp_inner.x = 48;
-			var _this = _this1.zpp_inner;
-			if(_this._invalidate != null) {
-				_this._invalidate(_this);
-			}
-		}
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
+		this.surrounding = new Character(32,32,48,48,-65281);
 		this.add(this.surrounding);
 		this.lazer.makePixelBullet(50,5,5);
 		this.lazer.setBulletSpeed(100);
@@ -8519,7 +12228,6 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	}
 	,createBricks: function() {
 		this.bricks = [];
-		this.brickHealthBars = [];
 		var brick;
 		var _g = 0;
 		var _g1 = this.levels;
@@ -8529,83 +12237,22 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			var _g3 = this.levels - i;
 			while(_g2 < _g3) {
 				var j = _g2++;
-				brick = new flixel_addons_nape_FlxNapeSprite();
-				brick.makeGraphic(this.brickWidth,this.brickHeight,-7650029);
-				brick.createRectangularBody();
-				brick.set_antialiasing(true);
-				var _this = brick.body;
-				if(_this.zpp_inner.angvel != 10) {
-					_this.zpp_inner.angvel = 10;
-					_this.zpp_inner.wake();
-				}
-				brick.scale.set_x(1);
-				brick.scale.set_y(1);
-				brick.set_flipX(flixel_FlxG.random.float(0,100) < 50);
-				brick.set_flipY(flixel_FlxG.random.float(0,100) < 50);
-				brick.setBodyMaterial(.5,.5,.5,2);
-				var _this1 = brick.body;
-				if(_this1.zpp_inner.wrap_pos == null) {
-					_this1.zpp_inner.setupPosition();
-				}
-				var _this2 = _this1.zpp_inner.wrap_pos;
-				var y = flixel_FlxG.height - this.brickHeight / 2 - this.brickHeight * i + 2;
-				var _this3 = _this2.zpp_inner;
-				if(_this3._validate != null) {
-					_this3._validate();
-				}
-				if(_this2.zpp_inner.y != y) {
-					_this2.zpp_inner.y = y;
-					var _this4 = _this2.zpp_inner;
-					if(_this4._invalidate != null) {
-						_this4._invalidate(_this4);
-					}
-				}
-				var _this5 = _this2.zpp_inner;
-				if(_this5._validate != null) {
-					_this5._validate();
-				}
-				var _this6 = brick.body;
-				if(_this6.zpp_inner.wrap_pos == null) {
-					_this6.zpp_inner.setupPosition();
-				}
-				var _this7 = _this6.zpp_inner.wrap_pos;
-				var x = flixel_FlxG.width / 2 - this.brickWidth / 2 * (this.levels - i - 1) + this.brickWidth * j;
-				var _this8 = _this7.zpp_inner;
-				if(_this8._validate != null) {
-					_this8._validate();
-				}
-				if(_this7.zpp_inner.x != x) {
-					_this7.zpp_inner.x = x;
-					var _this9 = _this7.zpp_inner;
-					if(_this9._invalidate != null) {
-						_this9._invalidate(_this9);
-					}
-				}
-				var _this10 = _this7.zpp_inner;
-				if(_this10._validate != null) {
-					_this10._validate();
-				}
+				brick = new Enemy(this.brickWidth,this.brickHeight,flixel_FlxG.width / 2 - this.brickWidth / 2 * (this.levels - i - 1) + this.brickWidth * j,flixel_FlxG.height - this.brickHeight / 2 - this.brickHeight * i + 2);
 				this.add(brick);
 				this.bricks.push(brick);
-				var healthBar = new HealthBar(brick);
-				healthBar.maxHealth = 100;
-				healthBar.currentHealth = 100;
-				healthBar.updateHealthBar();
-				this.add(healthBar);
-				this.brickHealthBars.push(healthBar);
+				if(brick.healthBar != null) {
+					this.add(brick.healthBar);
+				}
 			}
 		}
 	}
 	,damageBrick: function(brick,damage) {
 		var brickIndex = this.bricks.indexOf(brick);
 		if(brickIndex != -1) {
-			var healthBar = this.brickHealthBars[brickIndex];
-			healthBar.currentHealth -= damage;
-			if(healthBar.currentHealth <= 0) {
+			var isDead = brick.applyDamage(damage);
+			if(isDead) {
 				this.stampBrick(brick);
 				this.removeBrick(brickIndex);
-			} else {
-				healthBar.updateHealthBar();
 			}
 		}
 	}
@@ -8618,7 +12265,6 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	}
 	,removeBrick: function(index) {
 		var brick = this.bricks[index];
-		var healthBar = this.brickHealthBars[index];
 		var _this = brick.body;
 		var space = null;
 		_this.zpp_inner.immutable_midstep("Body::space");
@@ -8640,259 +12286,48 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		}
 		var tmp = _this.zpp_inner.space == null;
 		this.remove(brick);
-		this.remove(healthBar);
+		if(brick.healthBar != null) {
+			this.remove(brick.healthBar);
+		}
 		HxOverrides.remove(this.bricks,brick);
-		HxOverrides.remove(this.brickHealthBars,healthBar);
 		brick.destroy();
-		healthBar.destroy();
+		if(brick.healthBar != null) {
+			brick.healthBar.destroy();
+		}
 	}
-	,applyDeceleration: function(elapsed,box) {
-		var _this = box.body;
-		if(_this.zpp_inner.wrap_vel == null) {
-			_this.zpp_inner.setupVelocity();
+	,isTouchingOtherBrick: function(brick,brickBodies) {
+		var _this = brick.body;
+		if(_this.zpp_inner.wrap_arbiters == null) {
+			_this.zpp_inner.wrap_arbiters = zpp_$nape_util_ZPP_$ArbiterList.get(_this.zpp_inner.arbiters,true);
 		}
-		var currentVelocity = _this.zpp_inner.wrap_vel;
-		var _this = currentVelocity.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var currentSpeed = currentVelocity.zpp_inner.x;
-		var _this = currentVelocity.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var currentSpeed1 = currentSpeed * currentVelocity.zpp_inner.x;
-		var _this = currentVelocity.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var currentSpeed = currentVelocity.zpp_inner.y;
-		var _this = currentVelocity.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var currentSpeed2 = Math.sqrt(currentSpeed1 + currentSpeed * currentVelocity.zpp_inner.y);
-		if(currentSpeed2 > this.playerMinSpeed) {
-			var newSpeed = currentSpeed2 - this.playerDeceleration * elapsed;
-			if(newSpeed <= this.playerMinSpeed) {
-				var _this = box.body;
-				if(_this.zpp_inner.wrap_vel == null) {
-					_this.zpp_inner.setupVelocity();
-				}
-				var _this1 = _this.zpp_inner.wrap_vel;
-				var tmp;
-				var _this = _this1.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				if(_this1.zpp_inner.x == 0) {
-					var _this = _this1.zpp_inner;
-					if(_this._validate != null) {
-						_this._validate();
-					}
-					tmp = _this1.zpp_inner.y == 0;
-				} else {
-					tmp = false;
-				}
-				if(!tmp) {
-					_this1.zpp_inner.x = 0;
-					_this1.zpp_inner.y = 0;
-					var _this = _this1.zpp_inner;
-					if(_this._invalidate != null) {
-						_this._invalidate(_this);
-					}
-				}
-				this.isSlowingDown = false;
-			} else {
-				var normalizedVel = currentVelocity.normalise();
-				var _this = box.body;
-				if(_this.zpp_inner.wrap_vel == null) {
-					_this.zpp_inner.setupVelocity();
-				}
-				var _this1 = _this.zpp_inner.wrap_vel;
-				var _this = normalizedVel.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				var x = normalizedVel.zpp_inner.x * newSpeed;
-				var _this = _this1.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				if(_this1.zpp_inner.x != x) {
-					_this1.zpp_inner.x = x;
-					var _this = _this1.zpp_inner;
-					if(_this._invalidate != null) {
-						_this._invalidate(_this);
-					}
-				}
-				var _this = _this1.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				var _this = box.body;
-				if(_this.zpp_inner.wrap_vel == null) {
-					_this.zpp_inner.setupVelocity();
-				}
-				var _this1 = _this.zpp_inner.wrap_vel;
-				var _this = normalizedVel.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				var y = normalizedVel.zpp_inner.y * newSpeed;
-				var _this = _this1.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				if(_this1.zpp_inner.y != y) {
-					_this1.zpp_inner.y = y;
-					var _this = _this1.zpp_inner;
-					if(_this._invalidate != null) {
-						_this._invalidate(_this);
-					}
-				}
-				var _this = _this1.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-			}
-		} else {
-			var _this = box.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
-			}
-			var _this1 = _this.zpp_inner.wrap_vel;
+		var _g = _this.zpp_inner.wrap_arbiters.iterator();
+		while(true) {
+			_g.zpp_inner.zpp_inner.valmod();
+			var length = _g.zpp_inner.zpp_gl();
+			_g.zpp_critical = true;
 			var tmp;
-			var _this = _this1.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(_this1.zpp_inner.x == 0) {
-				var _this = _this1.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				tmp = _this1.zpp_inner.y == 0;
+			if(_g.zpp_i < length) {
+				tmp = true;
 			} else {
+				_g.zpp_next = nape_dynamics_ArbiterIterator.zpp_pool;
+				nape_dynamics_ArbiterIterator.zpp_pool = _g;
+				_g.zpp_inner = null;
 				tmp = false;
 			}
 			if(!tmp) {
-				_this1.zpp_inner.x = 0;
-				_this1.zpp_inner.y = 0;
-				var _this = _this1.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
+				break;
 			}
-			this.isSlowingDown = false;
-		}
-	}
-	,applyRotationDeceleration: function(elapsed,box) {
-		var currentAngularVel = box.body.zpp_inner.angvel;
-		var currentRotation = box.body.zpp_inner.rot;
-		var angleError = -currentRotation;
-		angleError = Math.atan2(Math.sin(angleError),Math.cos(angleError));
-		var desiredAngularAcc = this.rotationKp * angleError - this.rotationKd * currentAngularVel;
-		var newAngularVel = currentAngularVel + desiredAngularAcc * elapsed;
-		if(newAngularVel > this.rotationMaxSpeed) {
-			newAngularVel = this.rotationMaxSpeed;
-		} else if(newAngularVel < -this.rotationMaxSpeed) {
-			newAngularVel = -this.rotationMaxSpeed;
-		}
-		if(Math.abs(angleError) <= this.rotationSnapAngle && Math.abs(newAngularVel) <= this.rotationSnapSpeed) {
-			var _this = box.body;
-			_this.zpp_inner.immutable_midstep("Body::rotation");
-			if(_this.zpp_inner.rot != 0) {
-				_this.zpp_inner.rot = 0;
-				var _this1 = _this.zpp_inner;
-				_this1.zip_axis = true;
-				var cx_ite = _this1.shapes.head;
-				while(cx_ite != null) {
-					var s = cx_ite.elt;
-					if(s.type == 1) {
-						s.polygon.invalidate_gverts();
-						s.polygon.invalidate_gaxi();
-					}
-					s.invalidate_worldCOM();
-					cx_ite = cx_ite.next;
-				}
-				_this1.zip_worldCOM = true;
-				_this.zpp_inner.wake();
-			}
-			var _this = box.body;
-			if(_this.zpp_inner.angvel != 0) {
-				_this.zpp_inner.angvel = 0;
-				_this.zpp_inner.wake();
-			}
-			this.isRotationSlowing = false;
-			this.isRotating = false;
-		} else {
-			var _this = box.body;
-			if(_this.zpp_inner.angvel != newAngularVel) {
-				_this.zpp_inner.angvel = newAngularVel;
-				_this.zpp_inner.wake();
+			_g.zpp_critical = false;
+			var arbiter = _g.zpp_inner.at(_g.zpp_i++);
+			var otherBody = (arbiter.zpp_inner.ws1.id > arbiter.zpp_inner.ws2.id ? arbiter.zpp_inner.b2.outer : arbiter.zpp_inner.b1.outer) == brick.body ? arbiter.zpp_inner.ws1.id > arbiter.zpp_inner.ws2.id ? arbiter.zpp_inner.b1.outer : arbiter.zpp_inner.b2.outer : arbiter.zpp_inner.ws1.id > arbiter.zpp_inner.ws2.id ? arbiter.zpp_inner.b2.outer : arbiter.zpp_inner.b1.outer;
+			if(brickBodies.h.__keys__[otherBody.__id__] != null) {
+				return true;
 			}
 		}
+		return false;
 	}
 	,update: function(elapsed) {
 		var _gthis = this;
-		var x = flixel_FlxG.mouse.getPosition().x;
-		var y = flixel_FlxG.mouse.getPosition().y;
-		if(y == null) {
-			y = 0;
-		}
-		if(x == null) {
-			x = 0;
-		}
-		var ret;
-		if(zpp_$nape_util_ZPP_$PubPool.poolVec2 == null) {
-			ret = new nape_geom_Vec2();
-		} else {
-			ret = zpp_$nape_util_ZPP_$PubPool.poolVec2;
-			zpp_$nape_util_ZPP_$PubPool.poolVec2 = ret.zpp_pool;
-			ret.zpp_pool = null;
-		}
-		if(ret.zpp_inner == null) {
-			var ret1;
-			if(zpp_$nape_geom_ZPP_$Vec2.zpp_pool == null) {
-				ret1 = new zpp_$nape_geom_ZPP_$Vec2();
-			} else {
-				ret1 = zpp_$nape_geom_ZPP_$Vec2.zpp_pool;
-				zpp_$nape_geom_ZPP_$Vec2.zpp_pool = ret1.next;
-				ret1.next = null;
-			}
-			ret1.weak = false;
-			ret1._immutable = false;
-			ret1.x = x;
-			ret1.y = y;
-			ret.zpp_inner = ret1;
-			ret.zpp_inner.outer = ret;
-		} else {
-			var tmp;
-			var _this = ret.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(ret.zpp_inner.x == x) {
-				var _this = ret.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				tmp = ret.zpp_inner.y == y;
-			} else {
-				tmp = false;
-			}
-			if(!tmp) {
-				ret.zpp_inner.x = x;
-				ret.zpp_inner.y = y;
-				var _this = ret.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-		}
-		ret.zpp_inner.weak = false;
-		var mousePoint = ret;
 		var _this = flixel_addons_nape_FlxNapeSpace.space;
 		if(_this.zpp_inner.wrap_gravity == null) {
 			_this.zpp_inner.getgravity();
@@ -8920,197 +12355,39 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 				_this._invalidate(_this);
 			}
 		}
-		var _this = flixel_FlxG.keys.pressed;
-		if(_this.keyManager.checkStatusUnsafe(87,_this.status)) {
-			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_pos == null) {
-				_this.zpp_inner.setupPosition();
-			}
-			var fh = _this.zpp_inner.wrap_pos;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var y = fh.zpp_inner.y - 5;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(fh.zpp_inner.y != y) {
-				fh.zpp_inner.y = y;
-				var _this = fh.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			this.isSlowingDown = false;
-		}
-		var _this = flixel_FlxG.keys.pressed;
-		if(_this.keyManager.checkStatusUnsafe(83,_this.status)) {
-			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_pos == null) {
-				_this.zpp_inner.setupPosition();
-			}
-			var fh = _this.zpp_inner.wrap_pos;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var y = fh.zpp_inner.y + 5;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(fh.zpp_inner.y != y) {
-				fh.zpp_inner.y = y;
-				var _this = fh.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			this.isSlowingDown = false;
-		}
-		var _this = flixel_FlxG.keys.pressed;
-		if(_this.keyManager.checkStatusUnsafe(65,_this.status)) {
-			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_pos == null) {
-				_this.zpp_inner.setupPosition();
-			}
-			var fh = _this.zpp_inner.wrap_pos;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var x = fh.zpp_inner.x - 5;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(fh.zpp_inner.x != x) {
-				fh.zpp_inner.x = x;
-				var _this = fh.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			this.isSlowingDown = false;
-		}
-		var _this = flixel_FlxG.keys.pressed;
-		if(_this.keyManager.checkStatusUnsafe(68,_this.status)) {
-			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_pos == null) {
-				_this.zpp_inner.setupPosition();
-			}
-			var fh = _this.zpp_inner.wrap_pos;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var x = fh.zpp_inner.x + 5;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(fh.zpp_inner.x != x) {
-				fh.zpp_inner.x = x;
-				var _this = fh.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			this.isSlowingDown = false;
-		}
-		var tmp;
-		var tmp1;
-		var tmp2;
-		var _this = flixel_FlxG.keys.pressed;
-		if(!_this.keyManager.checkStatusUnsafe(87,_this.status)) {
-			var _this = flixel_FlxG.keys.pressed;
-			tmp2 = !_this.keyManager.checkStatusUnsafe(83,_this.status);
-		} else {
-			tmp2 = false;
-		}
-		if(tmp2) {
-			var _this = flixel_FlxG.keys.pressed;
-			tmp1 = !_this.keyManager.checkStatusUnsafe(65,_this.status);
-		} else {
-			tmp1 = false;
-		}
-		if(tmp1) {
-			var _this = flixel_FlxG.keys.pressed;
-			tmp = !_this.keyManager.checkStatusUnsafe(68,_this.status);
-		} else {
-			tmp = false;
-		}
-		if(tmp) {
-			var _this = this.box.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
-			}
-			var _this1 = _this.zpp_inner.wrap_vel;
-			var _this = _this1.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var tmp = _this1.zpp_inner.x;
-			var _this = _this1.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var tmp1 = tmp * _this1.zpp_inner.x;
-			var _this = _this1.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var tmp = _this1.zpp_inner.y;
-			var _this = _this1.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(Math.sqrt(tmp1 + tmp * _this1.zpp_inner.y) > this.playerMinSpeed) {
-				this.isSlowingDown = true;
-			}
-		}
-		if(this.isSlowingDown) {
-			this.applyDeceleration(elapsed,this.box);
-			var _g = 0;
-			var _g1 = this.bricks;
-			while(_g < _g1.length) {
-				var brick = _g1[_g];
-				++_g;
-				this.applyDeceleration(elapsed,brick);
-			}
-		}
-		this.applyRotationDeceleration(elapsed,this.box);
+		this.box.handleInput();
+		this.box.applyDecelerationIfNeeded(elapsed);
+		var brickBodies = new haxe_ds_ObjectMap();
 		var _g = 0;
 		var _g1 = this.bricks;
 		while(_g < _g1.length) {
 			var brick = _g1[_g];
 			++_g;
-			this.applyRotationDeceleration(elapsed,brick);
+			brickBodies.set(brick.body,true);
 		}
 		var _g = 0;
-		var _g1 = this.brickHealthBars;
+		var _g1 = this.bricks;
 		while(_g < _g1.length) {
-			var healthBar = _g1[_g];
+			var brick = _g1[_g];
 			++_g;
-			healthBar.updateHealthBar();
+			if(!this.isTouchingOtherBrick(brick,brickBodies)) {
+				brick.applyDeceleration(elapsed);
+			}
+		}
+		this.box.applyRotationDeceleration(elapsed);
+		var _g = 0;
+		var _g1 = this.bricks;
+		while(_g < _g1.length) {
+			var brick = _g1[_g];
+			++_g;
+			brick.applyRotationDeceleration(elapsed);
+		}
+		var _g = 0;
+		var _g1 = this.bricks;
+		while(_g < _g1.length) {
+			var brick = _g1[_g];
+			++_g;
+			brick.updateHealthBar();
 		}
 		if(this.shooter.collides && this.shooter.collidesSpr != null) {
 			var collisionPoint = new nape_geom_Vec2(this.shooter.collidesSpr.x,this.shooter.collidesSpr.y);
@@ -9168,6 +12445,192 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		flixel_FlxState.prototype.update.call(this,elapsed);
 	}
 	,__class__: PlayState
+});
+var Player = function(width,height,xPos,yPos) {
+	this.isSlowingDown = false;
+	Character.call(this,width,height,xPos,yPos,-65281,0,false);
+	this.setCollision(256,-1,Character.CB_PLAYER);
+};
+$hxClasses["Player"] = Player;
+Player.__name__ = "Player";
+Player.__super__ = Character;
+Player.prototype = $extend(Character.prototype,{
+	isSlowingDown: null
+	,handleInput: function() {
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatusUnsafe(87,_this.status)) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
+			}
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var y = fh.zpp_inner.y - 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.y != y) {
+				fh.zpp_inner.y = y;
+				var _this = fh.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			this.isSlowingDown = false;
+		}
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatusUnsafe(83,_this.status)) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
+			}
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var y = fh.zpp_inner.y + 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.y != y) {
+				fh.zpp_inner.y = y;
+				var _this = fh.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			this.isSlowingDown = false;
+		}
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatusUnsafe(65,_this.status)) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
+			}
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var x = fh.zpp_inner.x - 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.x != x) {
+				fh.zpp_inner.x = x;
+				var _this = fh.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			this.isSlowingDown = false;
+		}
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatusUnsafe(68,_this.status)) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_pos == null) {
+				_this.zpp_inner.setupPosition();
+			}
+			var fh = _this.zpp_inner.wrap_pos;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var x = fh.zpp_inner.x + 5;
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(fh.zpp_inner.x != x) {
+				fh.zpp_inner.x = x;
+				var _this = fh.zpp_inner;
+				if(_this._invalidate != null) {
+					_this._invalidate(_this);
+				}
+			}
+			var _this = fh.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			this.isSlowingDown = false;
+		}
+		var tmp;
+		var tmp1;
+		var tmp2;
+		var _this = flixel_FlxG.keys.pressed;
+		if(!_this.keyManager.checkStatusUnsafe(87,_this.status)) {
+			var _this = flixel_FlxG.keys.pressed;
+			tmp2 = !_this.keyManager.checkStatusUnsafe(83,_this.status);
+		} else {
+			tmp2 = false;
+		}
+		if(tmp2) {
+			var _this = flixel_FlxG.keys.pressed;
+			tmp1 = !_this.keyManager.checkStatusUnsafe(65,_this.status);
+		} else {
+			tmp1 = false;
+		}
+		if(tmp1) {
+			var _this = flixel_FlxG.keys.pressed;
+			tmp = !_this.keyManager.checkStatusUnsafe(68,_this.status);
+		} else {
+			tmp = false;
+		}
+		if(tmp) {
+			var _this = this.body;
+			if(_this.zpp_inner.wrap_vel == null) {
+				_this.zpp_inner.setupVelocity();
+			}
+			var _this1 = _this.zpp_inner.wrap_vel;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp = _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp1 = tmp * _this1.zpp_inner.x;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			var tmp = _this1.zpp_inner.y;
+			var _this = _this1.zpp_inner;
+			if(_this._validate != null) {
+				_this._validate();
+			}
+			if(Math.sqrt(tmp1 + tmp * _this1.zpp_inner.y) > this.minSpeed) {
+				this.isSlowingDown = true;
+			}
+		}
+	}
+	,applyDecelerationIfNeeded: function(elapsed) {
+		if(this.isSlowingDown) {
+			this.applyDeceleration(elapsed);
+		}
+	}
+	,__class__: Player
 });
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
@@ -9333,7 +12796,7 @@ var Shooter = function() {
 		}
 		var _this3 = spr.body;
 		_this3.zpp_inner.bulletEnabled = true;
-		spr.body.setShapeFilters(new nape_dynamics_InteractionFilter(256,-257));
+		spr.body.setShapeFilters(new nape_dynamics_InteractionFilter(1024,-257));
 		spr.kill();
 		this.add(spr);
 	}
@@ -9349,7 +12812,7 @@ var Shooter = function() {
 		zpp_$nape_util_ZPP_$Flags.InteractionType_COLLISION = new nape_callbacks_InteractionType();
 		zpp_$nape_util_ZPP_$Flags.internal = false;
 	}
-	var obj1 = new nape_callbacks_InteractionListener(obj,zpp_$nape_util_ZPP_$Flags.InteractionType_COLLISION,this.CB_BULLET,zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY,$bind(this,this.onBulletCollides));
+	var obj1 = new nape_callbacks_InteractionListener(obj,zpp_$nape_util_ZPP_$Flags.InteractionType_COLLISION,this.CB_BULLET,Character.CB_TARGET,$bind(this,this.onBulletCollides));
 	if(_this.zpp_inner.reverse_flag) {
 		_this.push(obj1);
 	} else {
@@ -9386,7 +12849,7 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 				directionX /= length;
 				directionY /= length;
 			}
-			var spawnDistance = 40;
+			var spawnDistance = 36;
 			var projectileCenterX = playerCenterX + directionX * spawnDistance;
 			var projectileCenterY = playerCenterY + directionY * spawnDistance;
 			var _this = spr.body;
@@ -9473,8 +12936,8 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			haxe_Log.trace("Player center: (" + playerCenterX + ", " + playerCenterY + ")",{ fileName : "source/Shooter.hx", lineNumber : 122, className : "Shooter", methodName : "launchProjectile"});
-			haxe_Log.trace("Mouse: (" + mouseX + ", " + mouseY + ")",{ fileName : "source/Shooter.hx", lineNumber : 123, className : "Shooter", methodName : "launchProjectile"});
+			haxe_Log.trace("Player center: (" + playerCenterX + ", " + playerCenterY + ")",{ fileName : "source/Shooter.hx", lineNumber : 123, className : "Shooter", methodName : "launchProjectile"});
+			haxe_Log.trace("Mouse: (" + mouseX + ", " + mouseY + ")",{ fileName : "source/Shooter.hx", lineNumber : 124, className : "Shooter", methodName : "launchProjectile"});
 			var _this = spr.body;
 			if(_this.zpp_inner.wrap_pos == null) {
 				_this.zpp_inner.setupPosition();
@@ -9494,8 +12957,8 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			haxe_Log.trace(tmp + _this1.zpp_inner.y + ")",{ fileName : "source/Shooter.hx", lineNumber : 124, className : "Shooter", methodName : "launchProjectile"});
-			haxe_Log.trace("Direction: (" + directionX + ", " + directionY + ")",{ fileName : "source/Shooter.hx", lineNumber : 125, className : "Shooter", methodName : "launchProjectile"});
+			haxe_Log.trace(tmp + _this1.zpp_inner.y + ")",{ fileName : "source/Shooter.hx", lineNumber : 125, className : "Shooter", methodName : "launchProjectile"});
+			haxe_Log.trace("Direction: (" + directionX + ", " + directionY + ")",{ fileName : "source/Shooter.hx", lineNumber : 126, className : "Shooter", methodName : "launchProjectile"});
 			var _this = spr.body;
 			if(_this.zpp_inner.wrap_vel == null) {
 				_this.zpp_inner.setupVelocity();
@@ -9515,14 +12978,14 @@ Shooter.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			if(_this._validate != null) {
 				_this._validate();
 			}
-			haxe_Log.trace(tmp + _this1.zpp_inner.y + ")",{ fileName : "source/Shooter.hx", lineNumber : 126, className : "Shooter", methodName : "launchProjectile"});
+			haxe_Log.trace(tmp + _this1.zpp_inner.y + ")",{ fileName : "source/Shooter.hx", lineNumber : 127, className : "Shooter", methodName : "launchProjectile"});
 		}
 	}
 	,onBulletCollides: function(clbk) {
 		var spr = this.getFirstAlive();
 		if(spr != null) {
 			this.collidesSpr = spr;
-			haxe_Log.trace("spr",{ fileName : "source/Shooter.hx", lineNumber : 135, className : "Shooter", methodName : "onBulletCollides", customParams : [spr]});
+			haxe_Log.trace("spr",{ fileName : "source/Shooter.hx", lineNumber : 136, className : "Shooter", methodName : "onBulletCollides", customParams : [spr]});
 			spr.kill();
 		}
 		this.collides = true;
@@ -10370,7 +13833,7 @@ StringTools.hex = function(n,digits) {
 	return s;
 };
 var Terrain = function(bitmap,cellSize,subSize) {
-	this.graphicPath = "";
+	this.graphicPath = "assets/images/Patagonia30.jpg";
 	this.isoQuality = 8;
 	this.bitmap = bitmap;
 	this.cellSize = cellSize;
@@ -10446,11 +13909,10 @@ var Terrain = function(bitmap,cellSize,subSize) {
 	ret.zpp_inner.weak = false;
 	this.isoGranularity = ret;
 	if(flixel_FlxG.renderBlit) {
-		this.sprite = new flixel_FlxSprite().makeGraphic(flixel_FlxG.width,flixel_FlxG.height,-16711936);
+		this.sprite = new flixel_FlxSprite().makeGraphic(flixel_FlxG.width,flixel_FlxG.height,0);
 		this.flashSprite = new openfl_display_Sprite();
 	} else {
 		this.sprite = this.megaStrip;
-		this.sprite.set_color(16711935);
 	}
 };
 $hxClasses["Terrain"] = Terrain;
@@ -10507,10 +13969,24 @@ Terrain.prototype = {
 		if(y1 >= this.height) {
 			y1 = this.height - 1;
 		}
+		var points = [];
+		var sweep;
+		var i = 0;
+		var pl;
 		var strip;
 		var vertices;
 		var ids;
 		var uvtData;
+		var x_1;
+		var y_1;
+		var x_2;
+		var y_2;
+		var x_3;
+		var y_3;
+		var maxX;
+		var maxY;
+		var u;
+		var v;
 		var _g = y0;
 		var _g1 = y1 + 1;
 		while(_g < _g1) {
@@ -10717,6 +14193,130 @@ Terrain.prototype = {
 					uvtData.__tempIndex++;
 				}
 				uvtData.splice(uvtData.__tempIndex,deleteCount2);
+				i = 0;
+				var _this13 = b.zpp_inner.wrap_shapes;
+				_this13.zpp_inner.valmod();
+				var _g6 = nape_shape_ShapeIterator.get(_this13);
+				while(true) {
+					_g6.zpp_inner.zpp_inner.valmod();
+					var _this14 = _g6.zpp_inner;
+					_this14.zpp_inner.valmod();
+					if(_this14.zpp_inner.zip_length) {
+						_this14.zpp_inner.zip_length = false;
+						_this14.zpp_inner.user_length = _this14.zpp_inner.inner.length;
+					}
+					var length2 = _this14.zpp_inner.user_length;
+					_g6.zpp_critical = true;
+					var tmp6;
+					if(_g6.zpp_i < length2) {
+						tmp6 = true;
+					} else {
+						_g6.zpp_next = nape_shape_ShapeIterator.zpp_pool;
+						nape_shape_ShapeIterator.zpp_pool = _g6;
+						_g6.zpp_inner = null;
+						tmp6 = false;
+					}
+					if(!tmp6) {
+						break;
+					}
+					_g6.zpp_critical = false;
+					var shape = _g6.zpp_inner.at(_g6.zpp_i++);
+					if(((shape) instanceof nape_shape_Polygon)) {
+						var poly = js_Boot.__cast(shape , nape_shape_Polygon);
+						var context = new org_poly2tri_SweepContext();
+						points = [];
+						if(poly.zpp_inner_zn.wrap_gverts == null) {
+							poly.zpp_inner_zn.getgverts();
+						}
+						var _g7 = poly.zpp_inner_zn.wrap_gverts.iterator();
+						while(true) {
+							_g7.zpp_inner.zpp_inner.valmod();
+							var length3 = _g7.zpp_inner.zpp_gl();
+							_g7.zpp_critical = true;
+							var tmp7;
+							if(_g7.zpp_i < length3) {
+								tmp7 = true;
+							} else {
+								_g7.zpp_next = nape_geom_Vec2Iterator.zpp_pool;
+								nape_geom_Vec2Iterator.zpp_pool = _g7;
+								_g7.zpp_inner = null;
+								tmp7 = false;
+							}
+							if(!tmp7) {
+								break;
+							}
+							_g7.zpp_critical = false;
+							var v1 = _g7.zpp_inner.at(_g7.zpp_i++);
+							var _this15 = v1.zpp_inner;
+							if(_this15._validate != null) {
+								_this15._validate();
+							}
+							var tmp8 = v1.zpp_inner.x;
+							var _this16 = v1.zpp_inner;
+							if(_this16._validate != null) {
+								_this16._validate();
+							}
+							points.push(new org_poly2tri_Point(tmp8,v1.zpp_inner.y));
+						}
+						context.addPolyline(points);
+						sweep = new org_poly2tri_Sweep(context);
+						sweep.triangulate();
+						var _g8 = 0;
+						var _g9 = context.triangles;
+						while(_g8 < _g9.length) {
+							var triangle = _g9[_g8];
+							++_g8;
+							pl = triangle.points;
+							x_1 = pl[0].x;
+							vertices.push(x_1);
+							y_1 = pl[0].y;
+							vertices.push(y_1);
+							ids.push(i++);
+							x_2 = pl[1].x;
+							vertices.push(x_2);
+							y_2 = pl[1].y;
+							vertices.push(y_2);
+							ids.push(i++);
+							x_3 = pl[2].x;
+							vertices.push(x_3);
+							y_3 = pl[2].y;
+							vertices.push(y_3);
+							ids.push(i++);
+							maxX = Math.max(x_1,Math.max(x_2,x_3));
+							maxY = Math.max(y_1,Math.max(y_2,y_3));
+							u = pl[0].x % this.cellSize / this.cellSize;
+							v = pl[0].y % this.cellSize / this.cellSize;
+							if(u == 0 && pl[0].x == maxX) {
+								u = 1;
+							}
+							if(v == 0 && pl[0].y == maxY) {
+								v = 1;
+							}
+							uvtData.push(u);
+							uvtData.push(v);
+							u = pl[1].x % this.cellSize / this.cellSize;
+							v = pl[1].y % this.cellSize / this.cellSize;
+							if(u == 0 && pl[1].x == maxX) {
+								u = 1;
+							}
+							if(v == 0 && pl[1].y == maxY) {
+								v = 1;
+							}
+							uvtData.push(u);
+							uvtData.push(v);
+							u = pl[2].x % this.cellSize / this.cellSize;
+							v = pl[2].y % this.cellSize / this.cellSize;
+							if(u == 0 && pl[2].x == maxX) {
+								u = 1;
+							}
+							if(v == 0 && pl[2].y == maxY) {
+								v = 1;
+							}
+							uvtData.push(u);
+							uvtData.push(v);
+						}
+					}
+				}
 			}
 		}
 		vertices = this.megaStrip.vertices;
@@ -17192,597 +20792,6 @@ flixel_addons_nape_FlxNapeSpace.prototype = $extend(flixel_FlxBasic.prototype,{
 	,draw: function() {
 	}
 	,__class__: flixel_addons_nape_FlxNapeSpace
-});
-var flixel_addons_nape_FlxNapeSprite = function(X,Y,SimpleGraphic,CreateRectangularBody,EnablePhysics) {
-	if(EnablePhysics == null) {
-		EnablePhysics = true;
-	}
-	if(CreateRectangularBody == null) {
-		CreateRectangularBody = true;
-	}
-	if(Y == null) {
-		Y = 0;
-	}
-	if(X == null) {
-		X = 0;
-	}
-	this._angularDrag = 1;
-	this._linearDrag = 1;
-	this.physicsEnabled = false;
-	flixel_FlxSprite.call(this,X,Y,SimpleGraphic);
-	if(CreateRectangularBody) {
-		this.createRectangularBody();
-	}
-	if(this.body != null) {
-		var _this = this.body;
-		var space = EnablePhysics ? flixel_addons_nape_FlxNapeSpace.space : null;
-		_this.zpp_inner.immutable_midstep("Body::space");
-		if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
-			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-				_this.zpp_inner.component.woken = false;
-			}
-			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-				(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
-			}
-			if(space != null) {
-				var _this1 = space.zpp_inner.wrap_bodies;
-				if(_this1.zpp_inner.reverse_flag) {
-					_this1.push(_this);
-				} else {
-					_this1.unshift(_this);
-				}
-			}
-		}
-		var tmp = _this.zpp_inner.space == null;
-	}
-	this.physicsEnabled = EnablePhysics;
-};
-$hxClasses["flixel.addons.nape.FlxNapeSprite"] = flixel_addons_nape_FlxNapeSprite;
-flixel_addons_nape_FlxNapeSprite.__name__ = "flixel.addons.nape.FlxNapeSprite";
-flixel_addons_nape_FlxNapeSprite.__super__ = flixel_FlxSprite;
-flixel_addons_nape_FlxNapeSprite.prototype = $extend(flixel_FlxSprite.prototype,{
-	body: null
-	,physicsEnabled: null
-	,_linearDrag: null
-	,_angularDrag: null
-	,destroy: function() {
-		this.destroyPhysObjects();
-		flixel_FlxSprite.prototype.destroy.call(this);
-	}
-	,update: function(elapsed) {
-		flixel_FlxSprite.prototype.update.call(this,elapsed);
-		if(this.body != null && this.moves) {
-			this.updatePhysObjects();
-		}
-	}
-	,kill: function() {
-		flixel_FlxSprite.prototype.kill.call(this);
-		if(this.body != null) {
-			var _this = this.body;
-			var space = null;
-			_this.zpp_inner.immutable_midstep("Body::space");
-			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					_this.zpp_inner.component.woken = false;
-				}
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
-				}
-				if(space != null) {
-					var _this1 = space.zpp_inner.wrap_bodies;
-					if(_this1.zpp_inner.reverse_flag) {
-						_this1.push(_this);
-					} else {
-						_this1.unshift(_this);
-					}
-				}
-			}
-			var tmp = _this.zpp_inner.space == null;
-		}
-	}
-	,revive: function() {
-		flixel_FlxSprite.prototype.revive.call(this);
-		if(this.body != null) {
-			var _this = this.body;
-			var space = flixel_addons_nape_FlxNapeSpace.space;
-			_this.zpp_inner.immutable_midstep("Body::space");
-			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					_this.zpp_inner.component.woken = false;
-				}
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
-				}
-				if(space != null) {
-					var _this1 = space.zpp_inner.wrap_bodies;
-					if(_this1.zpp_inner.reverse_flag) {
-						_this1.push(_this);
-					} else {
-						_this1.unshift(_this);
-					}
-				}
-			}
-			var tmp = _this.zpp_inner.space == null;
-		}
-	}
-	,addPremadeBody: function(NewBody) {
-		if(this.body != null) {
-			this.destroyPhysObjects();
-		}
-		if(NewBody.zpp_inner.wrap_pos == null) {
-			NewBody.zpp_inner.setupPosition();
-		}
-		var _this = NewBody.zpp_inner.wrap_pos;
-		var x = this.x;
-		var _this1 = _this.zpp_inner;
-		if(_this1._validate != null) {
-			_this1._validate();
-		}
-		if(_this.zpp_inner.x != x) {
-			_this.zpp_inner.x = x;
-			var _this1 = _this.zpp_inner;
-			if(_this1._invalidate != null) {
-				_this1._invalidate(_this1);
-			}
-		}
-		var _this1 = _this.zpp_inner;
-		if(_this1._validate != null) {
-			_this1._validate();
-		}
-		if(NewBody.zpp_inner.wrap_pos == null) {
-			NewBody.zpp_inner.setupPosition();
-		}
-		var _this = NewBody.zpp_inner.wrap_pos;
-		var y = this.y;
-		var _this1 = _this.zpp_inner;
-		if(_this1._validate != null) {
-			_this1._validate();
-		}
-		if(_this.zpp_inner.y != y) {
-			_this.zpp_inner.y = y;
-			var _this1 = _this.zpp_inner;
-			if(_this1._invalidate != null) {
-				_this1._invalidate(_this1);
-			}
-		}
-		var _this1 = _this.zpp_inner;
-		if(_this1._validate != null) {
-			_this1._validate();
-		}
-		this.setBody(NewBody);
-		this.setBodyMaterial();
-	}
-	,createCircularBody: function(Radius,_Type) {
-		if(Radius == null) {
-			Radius = 16;
-		}
-		if(this.body != null) {
-			this.destroyPhysObjects();
-		}
-		this.centerOffsets(false);
-		var tmp;
-		if(_Type != null) {
-			tmp = _Type;
-		} else {
-			if(zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC == null) {
-				zpp_$nape_util_ZPP_$Flags.internal = true;
-				zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC = new nape_phys_BodyType();
-				zpp_$nape_util_ZPP_$Flags.internal = false;
-			}
-			tmp = zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC;
-		}
-		var x = this.x;
-		var y = this.y;
-		if(y == null) {
-			y = 0;
-		}
-		if(x == null) {
-			x = 0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var weak = true;
-		if(weak == null) {
-			weak = false;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var ret;
-		if(zpp_$nape_util_ZPP_$PubPool.poolVec2 == null) {
-			ret = new nape_geom_Vec2();
-		} else {
-			ret = zpp_$nape_util_ZPP_$PubPool.poolVec2;
-			zpp_$nape_util_ZPP_$PubPool.poolVec2 = ret.zpp_pool;
-			ret.zpp_pool = null;
-		}
-		if(ret.zpp_inner == null) {
-			var ret1;
-			if(zpp_$nape_geom_ZPP_$Vec2.zpp_pool == null) {
-				ret1 = new zpp_$nape_geom_ZPP_$Vec2();
-			} else {
-				ret1 = zpp_$nape_geom_ZPP_$Vec2.zpp_pool;
-				zpp_$nape_geom_ZPP_$Vec2.zpp_pool = ret1.next;
-				ret1.next = null;
-			}
-			ret1.weak = false;
-			ret1._immutable = false;
-			ret1.x = x1;
-			ret1.y = y1;
-			ret.zpp_inner = ret1;
-			ret.zpp_inner.outer = ret;
-		} else {
-			var tmp1;
-			var _this = ret.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(ret.zpp_inner.x == x1) {
-				var _this = ret.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				tmp1 = ret.zpp_inner.y == y1;
-			} else {
-				tmp1 = false;
-			}
-			if(!tmp1) {
-				ret.zpp_inner.x = x1;
-				ret.zpp_inner.y = y1;
-				var _this = ret.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-		}
-		ret.zpp_inner.weak = weak;
-		this.setBody(new nape_phys_Body(tmp,ret));
-		var _this = this.body.zpp_inner.wrap_shapes;
-		var obj = new nape_shape_Circle(Radius);
-		if(_this.zpp_inner.reverse_flag) {
-			_this.push(obj);
-		} else {
-			_this.unshift(obj);
-		}
-		this.setBodyMaterial();
-	}
-	,createRectangularBody: function(Width,Height,_Type) {
-		if(Height == null) {
-			Height = 0;
-		}
-		if(Width == null) {
-			Width = 0;
-		}
-		if(this.body != null) {
-			this.destroyPhysObjects();
-		}
-		if(Width <= 0) {
-			Width = this.frameWidth;
-		}
-		if(Height <= 0) {
-			Height = this.frameHeight;
-		}
-		this.centerOffsets(false);
-		var tmp;
-		if(_Type != null) {
-			tmp = _Type;
-		} else {
-			if(zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC == null) {
-				zpp_$nape_util_ZPP_$Flags.internal = true;
-				zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC = new nape_phys_BodyType();
-				zpp_$nape_util_ZPP_$Flags.internal = false;
-			}
-			tmp = zpp_$nape_util_ZPP_$Flags.BodyType_DYNAMIC;
-		}
-		var x = this.x;
-		var y = this.y;
-		if(y == null) {
-			y = 0;
-		}
-		if(x == null) {
-			x = 0;
-		}
-		var x1 = x;
-		var y1 = y;
-		var weak = true;
-		if(weak == null) {
-			weak = false;
-		}
-		if(y1 == null) {
-			y1 = 0;
-		}
-		if(x1 == null) {
-			x1 = 0;
-		}
-		var ret;
-		if(zpp_$nape_util_ZPP_$PubPool.poolVec2 == null) {
-			ret = new nape_geom_Vec2();
-		} else {
-			ret = zpp_$nape_util_ZPP_$PubPool.poolVec2;
-			zpp_$nape_util_ZPP_$PubPool.poolVec2 = ret.zpp_pool;
-			ret.zpp_pool = null;
-		}
-		if(ret.zpp_inner == null) {
-			var ret1;
-			if(zpp_$nape_geom_ZPP_$Vec2.zpp_pool == null) {
-				ret1 = new zpp_$nape_geom_ZPP_$Vec2();
-			} else {
-				ret1 = zpp_$nape_geom_ZPP_$Vec2.zpp_pool;
-				zpp_$nape_geom_ZPP_$Vec2.zpp_pool = ret1.next;
-				ret1.next = null;
-			}
-			ret1.weak = false;
-			ret1._immutable = false;
-			ret1.x = x1;
-			ret1.y = y1;
-			ret.zpp_inner = ret1;
-			ret.zpp_inner.outer = ret;
-		} else {
-			var tmp1;
-			var _this = ret.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(ret.zpp_inner.x == x1) {
-				var _this = ret.zpp_inner;
-				if(_this._validate != null) {
-					_this._validate();
-				}
-				tmp1 = ret.zpp_inner.y == y1;
-			} else {
-				tmp1 = false;
-			}
-			if(!tmp1) {
-				ret.zpp_inner.x = x1;
-				ret.zpp_inner.y = y1;
-				var _this = ret.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-		}
-		ret.zpp_inner.weak = weak;
-		this.setBody(new nape_phys_Body(tmp,ret));
-		var _this = this.body.zpp_inner.wrap_shapes;
-		var obj = new nape_shape_Polygon(nape_shape_Polygon.box(Width,Height));
-		if(_this.zpp_inner.reverse_flag) {
-			_this.push(obj);
-		} else {
-			_this.unshift(obj);
-		}
-		this.setBodyMaterial();
-	}
-	,setBodyMaterial: function(Elasticity,DynamicFriction,StaticFriction,Density,RotationFriction) {
-		if(RotationFriction == null) {
-			RotationFriction = 0.001;
-		}
-		if(Density == null) {
-			Density = 1;
-		}
-		if(StaticFriction == null) {
-			StaticFriction = 0.4;
-		}
-		if(DynamicFriction == null) {
-			DynamicFriction = 0.2;
-		}
-		if(Elasticity == null) {
-			Elasticity = 1;
-		}
-		if(this.body == null) {
-			return;
-		}
-		this.body.setShapeMaterials(new nape_phys_Material(Elasticity,DynamicFriction,StaticFriction,Density,RotationFriction));
-	}
-	,destroyPhysObjects: function() {
-		if(this.body != null) {
-			if(flixel_addons_nape_FlxNapeSpace.space != null) {
-				flixel_addons_nape_FlxNapeSpace.space.zpp_inner.wrap_bodies.remove(this.body);
-			}
-			this.body = null;
-		}
-	}
-	,setDrag: function(LinearDrag,AngularDrag) {
-		if(AngularDrag == null) {
-			AngularDrag = 1;
-		}
-		if(LinearDrag == null) {
-			LinearDrag = 1;
-		}
-		this._linearDrag = LinearDrag;
-		this._angularDrag = AngularDrag;
-	}
-	,setBody: function(body) {
-		this.body = body;
-		var Value = this.physicsEnabled;
-		if(this.body != null) {
-			var _this = this.body;
-			var space = Value ? flixel_addons_nape_FlxNapeSpace.space : null;
-			_this.zpp_inner.immutable_midstep("Body::space");
-			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					_this.zpp_inner.component.woken = false;
-				}
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
-				}
-				if(space != null) {
-					var _this1 = space.zpp_inner.wrap_bodies;
-					if(_this1.zpp_inner.reverse_flag) {
-						_this1.push(_this);
-					} else {
-						_this1.unshift(_this);
-					}
-				}
-			}
-			var tmp = _this.zpp_inner.space == null;
-		}
-		this.physicsEnabled = Value;
-	}
-	,updatePhysObjects: function() {
-		this.updatePosition();
-		if(!this.body.zpp_inner.norotate) {
-			this.set_angle(this.body.zpp_inner.rot * (180 / Math.PI));
-		}
-		if(this._linearDrag < 1 || this._angularDrag < 1) {
-			var fh = this.body;
-			var angularVel = fh.zpp_inner.angvel * this._angularDrag;
-			if(fh.zpp_inner.angvel != angularVel) {
-				fh.zpp_inner.angvel = angularVel;
-				fh.zpp_inner.wake();
-			}
-			var _this = this.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
-			}
-			var fh = _this.zpp_inner.wrap_vel;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var x = fh.zpp_inner.x * this._linearDrag;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(fh.zpp_inner.x != x) {
-				fh.zpp_inner.x = x;
-				var _this = fh.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var _this = this.body;
-			if(_this.zpp_inner.wrap_vel == null) {
-				_this.zpp_inner.setupVelocity();
-			}
-			var fh = _this.zpp_inner.wrap_vel;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			var y = fh.zpp_inner.y * this._linearDrag;
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-			if(fh.zpp_inner.y != y) {
-				fh.zpp_inner.y = y;
-				var _this = fh.zpp_inner;
-				if(_this._invalidate != null) {
-					_this._invalidate(_this);
-				}
-			}
-			var _this = fh.zpp_inner;
-			if(_this._validate != null) {
-				_this._validate();
-			}
-		}
-	}
-	,updatePosition: function() {
-		var _this = this.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		this.set_x(_this1.zpp_inner.x - this.origin.x);
-		var _this = this.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		this.set_y(_this1.zpp_inner.y - this.origin.y);
-	}
-	,set_physicsEnabled: function(Value) {
-		if(this.body != null) {
-			var _this = this.body;
-			var space = Value ? flixel_addons_nape_FlxNapeSpace.space : null;
-			_this.zpp_inner.immutable_midstep("Body::space");
-			if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != space) {
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					_this.zpp_inner.component.woken = false;
-				}
-				if((_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer) != null) {
-					(_this.zpp_inner.space == null ? null : _this.zpp_inner.space.outer).zpp_inner.wrap_bodies.remove(_this);
-				}
-				if(space != null) {
-					var _this1 = space.zpp_inner.wrap_bodies;
-					if(_this1.zpp_inner.reverse_flag) {
-						_this1.push(_this);
-					} else {
-						_this1.unshift(_this);
-					}
-				}
-			}
-			var tmp = _this.zpp_inner.space == null;
-		}
-		return this.physicsEnabled = Value;
-	}
-	,setPosition: function(X,Y) {
-		if(Y == null) {
-			Y = 0;
-		}
-		if(X == null) {
-			X = 0;
-		}
-		var _this = this.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		if(_this1.zpp_inner.x != X) {
-			_this1.zpp_inner.x = X;
-			var _this = _this1.zpp_inner;
-			if(_this._invalidate != null) {
-				_this._invalidate(_this);
-			}
-		}
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		var _this = this.body;
-		if(_this.zpp_inner.wrap_pos == null) {
-			_this.zpp_inner.setupPosition();
-		}
-		var _this1 = _this.zpp_inner.wrap_pos;
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		if(_this1.zpp_inner.y != Y) {
-			_this1.zpp_inner.y = Y;
-			var _this = _this1.zpp_inner;
-			if(_this._invalidate != null) {
-				_this._invalidate(_this);
-			}
-		}
-		var _this = _this1.zpp_inner;
-		if(_this._validate != null) {
-			_this._validate();
-		}
-		this.updatePosition();
-	}
-	,__class__: flixel_addons_nape_FlxNapeSprite
-	,__properties__: $extend(flixel_FlxSprite.prototype.__properties__,{set_physicsEnabled:"set_physicsEnabled"})
 });
 var flixel_animation_FlxBaseAnimation = function(Parent,Name) {
 	this.curIndex = 0;
@@ -80488,7 +83497,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 63806;
+	this.version = 914088;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
@@ -83172,71 +86181,6 @@ nape_callbacks_CbEvent.prototype = {
 		}
 	}
 	,__class__: nape_callbacks_CbEvent
-};
-var nape_callbacks_CbType = function() {
-	this.zpp_inner = null;
-	this.zpp_inner = new zpp_$nape_callbacks_ZPP_$CbType();
-	this.zpp_inner.outer = this;
-};
-$hxClasses["nape.callbacks.CbType"] = nape_callbacks_CbType;
-nape_callbacks_CbType.__name__ = "nape.callbacks.CbType";
-nape_callbacks_CbType.__properties__ = {get_ANY_COMPOUND:"get_ANY_COMPOUND",get_ANY_SHAPE:"get_ANY_SHAPE",get_ANY_CONSTRAINT:"get_ANY_CONSTRAINT",get_ANY_BODY:"get_ANY_BODY"};
-nape_callbacks_CbType.get_ANY_BODY = function() {
-	return zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY;
-};
-nape_callbacks_CbType.get_ANY_CONSTRAINT = function() {
-	return zpp_$nape_callbacks_ZPP_$CbType.ANY_CONSTRAINT;
-};
-nape_callbacks_CbType.get_ANY_SHAPE = function() {
-	return zpp_$nape_callbacks_ZPP_$CbType.ANY_SHAPE;
-};
-nape_callbacks_CbType.get_ANY_COMPOUND = function() {
-	return zpp_$nape_callbacks_ZPP_$CbType.ANY_COMPOUND;
-};
-nape_callbacks_CbType.prototype = {
-	zpp_inner: null
-	,get_id: function() {
-		return this.zpp_inner.id;
-	}
-	,including: function(includes) {
-		return new nape_callbacks_OptionType(this).including(includes);
-	}
-	,excluding: function(excludes) {
-		return new nape_callbacks_OptionType(this).excluding(excludes);
-	}
-	,get_userData: function() {
-		if(this.zpp_inner.userData == null) {
-			this.zpp_inner.userData = { };
-		}
-		return this.zpp_inner.userData;
-	}
-	,get_interactors: function() {
-		if(this.zpp_inner.wrap_interactors == null) {
-			this.zpp_inner.wrap_interactors = zpp_$nape_util_ZPP_$InteractorList.get(this.zpp_inner.interactors,true);
-		}
-		return this.zpp_inner.wrap_interactors;
-	}
-	,get_constraints: function() {
-		if(this.zpp_inner.wrap_constraints == null) {
-			this.zpp_inner.wrap_constraints = zpp_$nape_util_ZPP_$ConstraintList.get(this.zpp_inner.constraints,true);
-		}
-		return this.zpp_inner.wrap_constraints;
-	}
-	,toString: function() {
-		if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY) {
-			return "ANY_BODY";
-		} else if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_SHAPE) {
-			return "ANY_SHAPE";
-		} else if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_COMPOUND) {
-			return "ANY_COMPOUND";
-		} else if(this == zpp_$nape_callbacks_ZPP_$CbType.ANY_CONSTRAINT) {
-			return "ANY_CONSTRAINT";
-		} else {
-			return "CbType#" + this.zpp_inner.id;
-		}
-	}
-	,__class__: nape_callbacks_CbType
-	,__properties__: {get_constraints:"get_constraints",get_interactors:"get_interactors",get_userData:"get_userData",get_id:"get_id"}
 };
 var nape_callbacks_CbTypeIterator = function() {
 	this.zpp_next = null;
@@ -161766,6 +164710,1060 @@ openfl_utils__$internal_format_amf3_AMF3Writer.prototype = {
 	}
 	,__class__: openfl_utils__$internal_format_amf3_AMF3Writer
 };
+var org_poly2tri_AdvancingFront = function(head,tail) {
+	this.search_node = this.head = head;
+	this.tail = tail;
+};
+$hxClasses["org.poly2tri.AdvancingFront"] = org_poly2tri_AdvancingFront;
+org_poly2tri_AdvancingFront.__name__ = "org.poly2tri.AdvancingFront";
+org_poly2tri_AdvancingFront.prototype = {
+	head: null
+	,tail: null
+	,search_node: null
+	,locateNode: function(x) {
+		var node = this.search_node;
+		if(x < node.value) {
+			while(true) {
+				node = node.prev;
+				if(!(node != null)) {
+					break;
+				}
+				if(x >= node.value) {
+					this.search_node = node;
+					return node;
+				}
+			}
+		} else {
+			while(true) {
+				node = node.next;
+				if(!(node != null)) {
+					break;
+				}
+				if(x < node.value) {
+					this.search_node = node.prev;
+					return node.prev;
+				}
+			}
+		}
+		return null;
+	}
+	,locatePoint: function(point) {
+		var px = point.x;
+		var node = this.search_node;
+		var nx = node.point.x;
+		if(px == nx) {
+			if(!point.equals(node.point)) {
+				if(point.equals(node.prev.point)) {
+					node = node.prev;
+				} else if(point.equals(node.next.point)) {
+					node = node.next;
+				} else {
+					throw haxe_Exception.thrown("Invalid AdvancingFront.locatePoint call!");
+				}
+			}
+		} else if(px < nx) {
+			do {
+				node = node.prev;
+				if(!(node != null)) {
+					break;
+				}
+			} while(!point.equals(node.point));
+		} else {
+			do {
+				node = node.next;
+				if(!(node != null)) {
+					break;
+				}
+			} while(!point.equals(node.point));
+		}
+		if(node != null) {
+			this.search_node = node;
+		}
+		return node;
+	}
+	,__class__: org_poly2tri_AdvancingFront
+};
+var org_poly2tri_Basin = function() {
+	this.width = 0;
+};
+$hxClasses["org.poly2tri.Basin"] = org_poly2tri_Basin;
+org_poly2tri_Basin.__name__ = "org.poly2tri.Basin";
+org_poly2tri_Basin.prototype = {
+	left_node: null
+	,bottom_node: null
+	,right_node: null
+	,width: null
+	,left_highest: null
+	,clear: function() {
+		this.left_node = null;
+		this.bottom_node = null;
+		this.right_node = null;
+		this.width = 0.0;
+		this.left_highest = false;
+	}
+	,__class__: org_poly2tri_Basin
+};
+var org_poly2tri_Constants = function() { };
+$hxClasses["org.poly2tri.Constants"] = org_poly2tri_Constants;
+org_poly2tri_Constants.__name__ = "org.poly2tri.Constants";
+var org_poly2tri_Edge = function(p1,p2) {
+	if(p1 == null || p2 == null) {
+		throw haxe_Exception.thrown("Edge::new p1 or p2 is null");
+	}
+	var swap = false;
+	if(p1.y > p2.y) {
+		swap = true;
+	} else if(p1.y == p2.y) {
+		if(p1.x == p2.x) {
+			throw haxe_Exception.thrown("Edge::repeat points " + Std.string(p1));
+		}
+		swap = p1.x > p2.x;
+	}
+	if(swap) {
+		this.q = p1;
+		this.p = p2;
+	} else {
+		this.p = p1;
+		this.q = p2;
+	}
+	this.q.get_edge_list().push(this);
+};
+$hxClasses["org.poly2tri.Edge"] = org_poly2tri_Edge;
+org_poly2tri_Edge.__name__ = "org.poly2tri.Edge";
+org_poly2tri_Edge.prototype = {
+	p: null
+	,q: null
+	,toString: function() {
+		return "Edge(" + Std.string(this.p) + ", " + Std.string(this.q) + ")";
+	}
+	,__class__: org_poly2tri_Edge
+};
+var org_poly2tri_EdgeEvent = function() {
+};
+$hxClasses["org.poly2tri.EdgeEvent"] = org_poly2tri_EdgeEvent;
+org_poly2tri_EdgeEvent.__name__ = "org.poly2tri.EdgeEvent";
+org_poly2tri_EdgeEvent.prototype = {
+	constrained_edge: null
+	,right: null
+	,__class__: org_poly2tri_EdgeEvent
+};
+var org_poly2tri_Node = function(point,triangle) {
+	this.point = point;
+	this.triangle = triangle;
+	this.value = this.point.x;
+};
+$hxClasses["org.poly2tri.Node"] = org_poly2tri_Node;
+org_poly2tri_Node.__name__ = "org.poly2tri.Node";
+org_poly2tri_Node.prototype = {
+	point: null
+	,triangle: null
+	,prev: null
+	,next: null
+	,value: null
+	,getHoleAngle: function() {
+		var ax = this.next.point.x - this.point.x;
+		var ay = this.next.point.y - this.point.y;
+		var bx = this.prev.point.x - this.point.x;
+		var by = this.prev.point.y - this.point.y;
+		return Math.atan2(ax * by - ay * bx,ax * bx + ay * by);
+	}
+	,getBasinAngle: function() {
+		return Math.atan2(this.point.y - this.next.next.point.y,this.point.x - this.next.next.point.x);
+	}
+	,__class__: org_poly2tri_Node
+};
+var org_poly2tri_Orientation = function() { };
+$hxClasses["org.poly2tri.Orientation"] = org_poly2tri_Orientation;
+org_poly2tri_Orientation.__name__ = "org.poly2tri.Orientation";
+org_poly2tri_Orientation.orient2d = function(pa,pb,pc) {
+	var detleft = (pa.x - pc.x) * (pb.y - pc.y);
+	var detright = (pa.y - pc.y) * (pb.x - pc.x);
+	var val = detleft - detright;
+	if(val > -org_poly2tri_Constants.EPSILON && val < org_poly2tri_Constants.EPSILON) {
+		return 0;
+	}
+	if(val > 0) {
+		return -1;
+	}
+	return 1;
+};
+var org_poly2tri_Point = function(x,y) {
+	this.x = x;
+	this.y = y;
+	this.id = org_poly2tri_Point.C_ID;
+	org_poly2tri_Point.C_ID++;
+};
+$hxClasses["org.poly2tri.Point"] = org_poly2tri_Point;
+org_poly2tri_Point.__name__ = "org.poly2tri.Point";
+org_poly2tri_Point.sortPoints = function(points) {
+	points.sort(org_poly2tri_Point.cmpPoints);
+};
+org_poly2tri_Point.cmpPoints = function(l,r) {
+	var ret = l.y - r.y;
+	if(ret == 0) {
+		ret = l.x - r.x;
+	}
+	if(ret < 0) {
+		return -1;
+	}
+	if(ret > 0) {
+		return 1;
+	}
+	return 0;
+};
+org_poly2tri_Point.prototype = {
+	id: null
+	,x: null
+	,y: null
+	,edge_list: null
+	,get_edge_list: function() {
+		if(this.edge_list == null) {
+			this.edge_list = [];
+		}
+		return this.edge_list;
+	}
+	,equals: function(that) {
+		if(this.x == that.x) {
+			return this.y == that.y;
+		} else {
+			return false;
+		}
+	}
+	,toString: function() {
+		return "Point(" + this.x + ", " + this.y + ")";
+	}
+	,__class__: org_poly2tri_Point
+	,__properties__: {get_edge_list:"get_edge_list"}
+};
+var org_poly2tri_Sweep = function(context) {
+	this.context = context;
+};
+$hxClasses["org.poly2tri.Sweep"] = org_poly2tri_Sweep;
+org_poly2tri_Sweep.__name__ = "org.poly2tri.Sweep";
+org_poly2tri_Sweep.nextFlipPoint = function(ep,eq,ot,op) {
+	var o2d = org_poly2tri_Orientation.orient2d(eq,op,ep);
+	if(o2d == 1) {
+		return ot.pointCCW(op);
+	} else if(o2d == -1) {
+		return ot.pointCW(op);
+	} else {
+		throw haxe_Exception.thrown("Sweep:: [Unsupported] Sweep.NextFlipPoint: opposing point on constrained edge!");
+	}
+};
+org_poly2tri_Sweep.prototype = {
+	context: null
+	,triangulate: function() {
+		this.context.initTriangulation();
+		this.context.createAdvancingFront();
+		this.sweepPoints();
+		this.finalizationPolygon();
+	}
+	,sweepPoints: function() {
+		var _g = 1;
+		var _g1 = this.context.points.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var point = this.context.points[i];
+			var node = this.pointEvent(point);
+			var _g2 = 0;
+			var _g3 = point.get_edge_list().length;
+			while(_g2 < _g3) {
+				var j = _g2++;
+				this.edgeEventByEdge(point.get_edge_list()[j],node);
+			}
+		}
+	}
+	,finalizationPolygon: function() {
+		var t = this.context.front.head.next.triangle;
+		var p = this.context.front.head.next.point;
+		while(!t.getConstrainedEdgeCW(p)) t = t.neighborCCW(p);
+		this.context.meshClean(t);
+	}
+	,pointEvent: function(point) {
+		var node = this.context.locateNode(point);
+		var new_node = this.newFrontTriangle(point,node);
+		if(point.x <= node.point.x + org_poly2tri_Constants.EPSILON) {
+			this.fill(node);
+		}
+		this.fillAdvancingFront(new_node);
+		return new_node;
+	}
+	,edgeEventByEdge: function(edge,node) {
+		this.context.edge_event.constrained_edge = edge;
+		this.context.edge_event.right = edge.p.x > edge.q.x;
+		if(node.triangle.isEdgeSide(edge.p,edge.q)) {
+			return;
+		}
+		this.fillEdgeEvent(edge,node);
+		this.edgeEventByPoints(edge.p,edge.q,node.triangle,edge.q);
+	}
+	,edgeEventByPoints: function(ep,eq,triangle,point) {
+		if(triangle.isEdgeSide(ep,eq)) {
+			return;
+		}
+		var p1 = triangle.pointCCW(point);
+		var o1 = org_poly2tri_Orientation.orient2d(eq,p1,ep);
+		if(o1 == 0) {
+			throw haxe_Exception.thrown("Sweep.edgeEvent: Collinear not supported!");
+		}
+		var p2 = triangle.pointCW(point);
+		var o2 = org_poly2tri_Orientation.orient2d(eq,p2,ep);
+		if(o2 == 0) {
+			throw haxe_Exception.thrown("Sweep.edgeEvent: Collinear not supported!");
+		}
+		if(o1 == o2) {
+			triangle = o1 == 1 ? triangle.neighborCCW(point) : triangle.neighborCW(point);
+			this.edgeEventByPoints(ep,eq,triangle,point);
+		} else {
+			this.flipEdgeEvent(ep,eq,triangle,point);
+		}
+	}
+	,newFrontTriangle: function(point,node) {
+		var triangle = new org_poly2tri_Triangle(point,node.point,node.next.point);
+		triangle.markNeighborTriangle(node.triangle);
+		this.context.addToMap(triangle);
+		var new_node = new org_poly2tri_Node(point);
+		new_node.next = node.next;
+		new_node.prev = node;
+		node.next.prev = new_node;
+		node.next = new_node;
+		if(!this.legalize(triangle)) {
+			this.context.mapTriangleToNodes(triangle);
+		}
+		return new_node;
+	}
+	,fill: function(node) {
+		var triangle = new org_poly2tri_Triangle(node.prev.point,node.point,node.next.point);
+		triangle.markNeighborTriangle(node.prev.triangle);
+		triangle.markNeighborTriangle(node.triangle);
+		this.context.addToMap(triangle);
+		node.prev.next = node.next;
+		node.next.prev = node.prev;
+		if(!this.legalize(triangle)) {
+			this.context.mapTriangleToNodes(triangle);
+		}
+		this.context.removeNode(node);
+	}
+	,fillAdvancingFront: function(n) {
+		var angle;
+		var node = n.next;
+		while(node.next != null) {
+			angle = node.getHoleAngle();
+			if(angle > org_poly2tri_Constants.PI_2 || angle < -org_poly2tri_Constants.PI_2) {
+				break;
+			}
+			this.fill(node);
+			node = node.next;
+		}
+		node = n.prev;
+		while(node.prev != null) {
+			angle = node.getHoleAngle();
+			if(angle > org_poly2tri_Constants.PI_2 || angle < -org_poly2tri_Constants.PI_2) {
+				break;
+			}
+			this.fill(node);
+			node = node.prev;
+		}
+		if(n.next != null && n.next.next != null) {
+			angle = n.getBasinAngle();
+			if(angle < org_poly2tri_Constants.PI_3div4) {
+				this.fillBasin(n);
+			}
+		}
+	}
+	,legalize: function(t) {
+		var _g = 0;
+		while(_g < 3) {
+			var i = _g++;
+			if(t.delaunay_edge[i]) {
+				continue;
+			}
+			var ot = t.neighbors[i];
+			if(ot != null) {
+				var p = t.points[i];
+				var op = ot.oppositePoint(t,p);
+				var oi = ot.index(op);
+				if(ot.constrained_edge[oi] || ot.delaunay_edge[oi]) {
+					t.constrained_edge[i] = ot.constrained_edge[oi];
+					continue;
+				}
+				if(org_poly2tri_Utils.insideIncircle(p,t.pointCCW(p),t.pointCW(p),op)) {
+					t.delaunay_edge[i] = true;
+					ot.delaunay_edge[oi] = true;
+					org_poly2tri_Triangle.rotateTrianglePair(t,p,ot,op);
+					var not_legalized = !this.legalize(t);
+					if(not_legalized) {
+						this.context.mapTriangleToNodes(t);
+					}
+					not_legalized = !this.legalize(ot);
+					if(not_legalized) {
+						this.context.mapTriangleToNodes(ot);
+					}
+					t.delaunay_edge[i] = false;
+					ot.delaunay_edge[oi] = false;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	,fillBasin: function(node) {
+		var tmp = org_poly2tri_Orientation.orient2d(node.point,node.next.point,node.next.next.point) == -1 ? node.next.next : node.next;
+		this.context.basin.left_node = tmp;
+		this.context.basin.bottom_node = this.context.basin.left_node;
+		while(this.context.basin.bottom_node.next != null && this.context.basin.bottom_node.point.y >= this.context.basin.bottom_node.next.point.y) this.context.basin.bottom_node = this.context.basin.bottom_node.next;
+		if(this.context.basin.bottom_node == this.context.basin.left_node) {
+			return;
+		}
+		this.context.basin.right_node = this.context.basin.bottom_node;
+		while(this.context.basin.right_node.next != null && this.context.basin.right_node.point.y < this.context.basin.right_node.next.point.y) this.context.basin.right_node = this.context.basin.right_node.next;
+		if(this.context.basin.right_node == this.context.basin.bottom_node) {
+			return;
+		}
+		this.context.basin.width = this.context.basin.right_node.point.x - this.context.basin.left_node.point.x;
+		this.context.basin.left_highest = this.context.basin.left_node.point.y > this.context.basin.right_node.point.y;
+		this.fillBasinReq(this.context.basin.bottom_node);
+	}
+	,fillBasinReq: function(node) {
+		if(this.isShallow(node)) {
+			return;
+		}
+		this.fill(node);
+		if(node.prev == this.context.basin.left_node && node.next == this.context.basin.right_node) {
+			return;
+		} else if(node.prev == this.context.basin.left_node) {
+			if(org_poly2tri_Orientation.orient2d(node.point,node.next.point,node.next.next.point) == 1) {
+				return;
+			}
+			node = node.next;
+		} else if(node.next == this.context.basin.right_node) {
+			if(org_poly2tri_Orientation.orient2d(node.point,node.prev.point,node.prev.prev.point) == -1) {
+				return;
+			}
+			node = node.prev;
+		} else {
+			node = node.prev.point.y < node.next.point.y ? node.prev : node.next;
+		}
+		this.fillBasinReq(node);
+	}
+	,isShallow: function(node) {
+		var height = this.context.basin.left_highest ? this.context.basin.left_node.point.y - node.point.y : this.context.basin.right_node.point.y - node.point.y;
+		return this.context.basin.width > height;
+	}
+	,fillEdgeEvent: function(edge,node) {
+		if(this.context.edge_event.right) {
+			this.fillRightAboveEdgeEvent(edge,node);
+		} else {
+			this.fillLeftAboveEdgeEvent(edge,node);
+		}
+	}
+	,fillRightAboveEdgeEvent: function(edge,node) {
+		while(node.next.point.x < edge.p.x) if(org_poly2tri_Orientation.orient2d(edge.q,node.next.point,edge.p) == -1) {
+			this.fillRightBelowEdgeEvent(edge,node);
+		} else {
+			node = node.next;
+		}
+	}
+	,fillRightBelowEdgeEvent: function(edge,node) {
+		if(node.point.x >= edge.p.x) {
+			return;
+		}
+		if(org_poly2tri_Orientation.orient2d(node.point,node.next.point,node.next.next.point) == -1) {
+			this.fillRightConcaveEdgeEvent(edge,node);
+		} else {
+			this.fillRightConvexEdgeEvent(edge,node);
+			this.fillRightBelowEdgeEvent(edge,node);
+		}
+	}
+	,fillRightConcaveEdgeEvent: function(edge,node) {
+		this.fill(node.next);
+		if(node.next.point != edge.p) {
+			if(org_poly2tri_Orientation.orient2d(edge.q,node.next.point,edge.p) == -1) {
+				if(org_poly2tri_Orientation.orient2d(node.point,node.next.point,node.next.next.point) == -1) {
+					this.fillRightConcaveEdgeEvent(edge,node);
+				}
+			}
+		}
+	}
+	,fillRightConvexEdgeEvent: function(edge,node) {
+		if(org_poly2tri_Orientation.orient2d(node.next.point,node.next.next.point,node.next.next.next.point) == -1) {
+			this.fillRightConcaveEdgeEvent(edge,node.next);
+		} else if(org_poly2tri_Orientation.orient2d(edge.q,node.next.next.point,edge.p) == -1) {
+			this.fillRightConvexEdgeEvent(edge,node.next);
+		}
+	}
+	,fillLeftAboveEdgeEvent: function(edge,node) {
+		while(node.prev.point.x > edge.p.x) if(org_poly2tri_Orientation.orient2d(edge.q,node.prev.point,edge.p) == 1) {
+			this.fillLeftBelowEdgeEvent(edge,node);
+		} else {
+			node = node.prev;
+		}
+	}
+	,fillLeftBelowEdgeEvent: function(edge,node) {
+		if(node.point.x > edge.p.x) {
+			if(org_poly2tri_Orientation.orient2d(node.point,node.prev.point,node.prev.prev.point) == 1) {
+				this.fillLeftConcaveEdgeEvent(edge,node);
+			} else {
+				this.fillLeftConvexEdgeEvent(edge,node);
+				this.fillLeftBelowEdgeEvent(edge,node);
+			}
+		}
+	}
+	,fillLeftConvexEdgeEvent: function(edge,node) {
+		if(org_poly2tri_Orientation.orient2d(node.prev.point,node.prev.prev.point,node.prev.prev.prev.point) == 1) {
+			this.fillLeftConcaveEdgeEvent(edge,node.prev);
+		} else if(org_poly2tri_Orientation.orient2d(edge.q,node.prev.prev.point,edge.p) == 1) {
+			this.fillLeftConvexEdgeEvent(edge,node.prev);
+		}
+	}
+	,fillLeftConcaveEdgeEvent: function(edge,node) {
+		this.fill(node.prev);
+		if(node.prev.point != edge.p) {
+			if(org_poly2tri_Orientation.orient2d(edge.q,node.prev.point,edge.p) == 1) {
+				if(org_poly2tri_Orientation.orient2d(node.point,node.prev.point,node.prev.prev.point) == 1) {
+					this.fillLeftConcaveEdgeEvent(edge,node);
+				}
+			}
+		}
+	}
+	,flipEdgeEvent: function(ep,eq,t,p) {
+		var ot = t.neighborAcross(p);
+		if(ot == null) {
+			throw haxe_Exception.thrown("Sweep::[BUG:FIXME] FLIP failed due to missing triangle!");
+		}
+		var op = ot.oppositePoint(t,p);
+		if(org_poly2tri_Utils.inScanArea(p,t.pointCCW(p),t.pointCW(p),op)) {
+			org_poly2tri_Triangle.rotateTrianglePair(t,p,ot,op);
+			this.context.mapTriangleToNodes(t);
+			this.context.mapTriangleToNodes(ot);
+			if(p == eq && op == ep) {
+				if(eq == this.context.edge_event.constrained_edge.q && ep == this.context.edge_event.constrained_edge.p) {
+					t.markConstrainedEdgeByPoints(ep,eq);
+					ot.markConstrainedEdgeByPoints(ep,eq);
+					this.legalize(t);
+					this.legalize(ot);
+				}
+			} else {
+				var o = org_poly2tri_Orientation.orient2d(eq,op,ep);
+				t = this.nextFlipTriangle(o,t,ot,p,op);
+				this.flipEdgeEvent(ep,eq,t,p);
+			}
+		} else {
+			var newP = org_poly2tri_Sweep.nextFlipPoint(ep,eq,ot,op);
+			this.flipScanEdgeEvent(ep,eq,t,ot,newP);
+			this.edgeEventByPoints(ep,eq,t,p);
+		}
+	}
+	,nextFlipTriangle: function(o,t,ot,p,op) {
+		var edge_index;
+		if(o == -1) {
+			edge_index = ot.edgeIndex(p,op);
+			ot.delaunay_edge[edge_index] = true;
+			this.legalize(ot);
+			ot.clearDelunayEdges();
+			return t;
+		}
+		edge_index = t.edgeIndex(p,op);
+		t.delaunay_edge[edge_index] = true;
+		this.legalize(t);
+		t.clearDelunayEdges();
+		return ot;
+	}
+	,flipScanEdgeEvent: function(ep,eq,flip_triangle,t,p) {
+		var ot = t.neighborAcross(p);
+		if(ot == null) {
+			throw haxe_Exception.thrown("Sweep::[BUG:FIXME] FLIP failed due to missing triangle");
+		}
+		var op = ot.oppositePoint(t,p);
+		if(org_poly2tri_Utils.inScanArea(eq,flip_triangle.pointCCW(eq),flip_triangle.pointCW(eq),op)) {
+			this.flipEdgeEvent(eq,op,ot,op);
+		} else {
+			var newP = org_poly2tri_Sweep.nextFlipPoint(ep,eq,ot,op);
+			this.flipScanEdgeEvent(ep,eq,flip_triangle,ot,newP);
+		}
+	}
+	,__class__: org_poly2tri_Sweep
+};
+var org_poly2tri_SweepContext = function() {
+	this.triangles = [];
+	this.points = [];
+	this.edge_list = [];
+	this.map = new haxe_ds_StringMap();
+	this.basin = new org_poly2tri_Basin();
+	this.edge_event = new org_poly2tri_EdgeEvent();
+};
+$hxClasses["org.poly2tri.SweepContext"] = org_poly2tri_SweepContext;
+org_poly2tri_SweepContext.__name__ = "org.poly2tri.SweepContext";
+org_poly2tri_SweepContext.prototype = {
+	triangles: null
+	,points: null
+	,edge_list: null
+	,map: null
+	,front: null
+	,head: null
+	,tail: null
+	,basin: null
+	,edge_event: null
+	,addPoints: function(points) {
+		var _g = 0;
+		while(_g < points.length) {
+			var point = points[_g];
+			++_g;
+			this.points.push(point);
+		}
+	}
+	,addPolyline: function(polyline) {
+		this.initEdges(polyline);
+		this.addPoints(polyline);
+	}
+	,initEdges: function(polyline) {
+		var _g = 0;
+		var _g1 = polyline.length;
+		while(_g < _g1) {
+			var n = _g++;
+			var nx = polyline[(n + 1) % polyline.length];
+			this.edge_list.push(new org_poly2tri_Edge(polyline[n],nx));
+		}
+	}
+	,addToMap: function(triangle) {
+		var this1 = this.map;
+		var key = triangle.toString();
+		this1.h[key] = triangle;
+	}
+	,initTriangulation: function() {
+		var xmin = this.points[0].x;
+		var xmax = this.points[0].x;
+		var ymin = this.points[0].y;
+		var ymax = this.points[0].y;
+		var _g = 0;
+		var _g1 = this.points;
+		while(_g < _g1.length) {
+			var p = _g1[_g];
+			++_g;
+			if(p.x > xmax) {
+				xmax = p.x;
+			}
+			if(p.x < xmin) {
+				xmin = p.x;
+			}
+			if(p.y > ymax) {
+				ymax = p.y;
+			}
+			if(p.y < ymin) {
+				ymin = p.y;
+			}
+		}
+		var dx = org_poly2tri_Constants.kAlpha * (xmax - xmin);
+		var dy = org_poly2tri_Constants.kAlpha * (ymax - ymin);
+		this.head = new org_poly2tri_Point(xmax + dx,ymin - dy);
+		this.tail = new org_poly2tri_Point(xmin - dy,ymin - dy);
+		org_poly2tri_Point.sortPoints(this.points);
+	}
+	,locateNode: function(point) {
+		return this.front.locateNode(point.x);
+	}
+	,createAdvancingFront: function() {
+		var triangle = new org_poly2tri_Triangle(this.points[0],this.tail,this.head);
+		this.addToMap(triangle);
+		var head = new org_poly2tri_Node(triangle.points[1],triangle);
+		var middle = new org_poly2tri_Node(triangle.points[0],triangle);
+		var tail = new org_poly2tri_Node(triangle.points[2]);
+		this.front = new org_poly2tri_AdvancingFront(head,tail);
+		head.next = middle;
+		middle.next = tail;
+		middle.prev = head;
+		tail.prev = middle;
+	}
+	,removeNode: function(node) {
+	}
+	,mapTriangleToNodes: function(triangle) {
+		if(triangle.neighbors[0] == null) {
+			var neighbor = this.front.locatePoint(triangle.pointCW(triangle.points[0]));
+			if(neighbor != null) {
+				neighbor.triangle = triangle;
+			}
+		}
+		if(triangle.neighbors[1] == null) {
+			var neighbor = this.front.locatePoint(triangle.pointCW(triangle.points[1]));
+			if(neighbor != null) {
+				neighbor.triangle = triangle;
+			}
+		}
+		if(triangle.neighbors[2] == null) {
+			var neighbor = this.front.locatePoint(triangle.pointCW(triangle.points[2]));
+			if(neighbor != null) {
+				neighbor.triangle = triangle;
+			}
+		}
+	}
+	,meshClean: function(t) {
+		var tmp = [t];
+		while(true) {
+			var t = tmp.pop();
+			if(t == null) {
+				break;
+			}
+			if(t.interior) {
+				continue;
+			}
+			t.interior = true;
+			this.triangles.push(t);
+			if(!t.constrained_edge[0]) {
+				tmp.push(t.neighbors[0]);
+			}
+			if(!t.constrained_edge[1]) {
+				tmp.push(t.neighbors[1]);
+			}
+			if(!t.constrained_edge[2]) {
+				tmp.push(t.neighbors[2]);
+			}
+		}
+	}
+	,__class__: org_poly2tri_SweepContext
+};
+var org_poly2tri_Triangle = function(p1,p2,p3,fixOrientation,checkOrientation) {
+	if(checkOrientation == null) {
+		checkOrientation = true;
+	}
+	if(fixOrientation == null) {
+		fixOrientation = false;
+	}
+	if(fixOrientation) {
+		if(org_poly2tri_Orientation.orient2d(p1,p2,p3) == 1) {
+			var pt = p3;
+			p3 = p2;
+			p2 = pt;
+		}
+	}
+	if(checkOrientation && org_poly2tri_Orientation.orient2d(p3,p2,p1) != 1) {
+		throw haxe_Exception.thrown("Triangle::Triangle must defined with Orientation.CW");
+	}
+	this.points = [p1,p2,p3];
+	this.neighbors = [null,null,null];
+	this.constrained_edge = [false,false,false];
+	this.delaunay_edge = [false,false,false];
+};
+$hxClasses["org.poly2tri.Triangle"] = org_poly2tri_Triangle;
+org_poly2tri_Triangle.__name__ = "org.poly2tri.Triangle";
+org_poly2tri_Triangle.rotateTrianglePair = function(t,p,ot,op) {
+	var n1 = t.neighborCCW(p);
+	var n2 = t.neighborCW(p);
+	var n3 = ot.neighborCCW(op);
+	var n4 = ot.neighborCW(op);
+	var ce1 = t.getConstrainedEdgeCCW(p);
+	var ce2 = t.getConstrainedEdgeCW(p);
+	var ce3 = ot.getConstrainedEdgeCCW(op);
+	var ce4 = ot.getConstrainedEdgeCW(op);
+	var de1 = t.getDelaunayEdgeCCW(p);
+	var de2 = t.getDelaunayEdgeCW(p);
+	var de3 = ot.getDelaunayEdgeCCW(op);
+	var de4 = ot.getDelaunayEdgeCW(op);
+	t.legalize(p,op);
+	ot.legalize(op,p);
+	ot.setDelaunayEdgeCCW(p,de1);
+	t.setDelaunayEdgeCW(p,de2);
+	t.setDelaunayEdgeCCW(op,de3);
+	ot.setDelaunayEdgeCW(op,de4);
+	ot.setConstrainedEdgeCCW(p,ce1);
+	t.setConstrainedEdgeCW(p,ce2);
+	t.setConstrainedEdgeCCW(op,ce3);
+	ot.setConstrainedEdgeCW(op,ce4);
+	t.clearNeigbors();
+	ot.clearNeigbors();
+	if(n1 != null) {
+		ot.markNeighborTriangle(n1);
+	}
+	if(n2 != null) {
+		t.markNeighborTriangle(n2);
+	}
+	if(n3 != null) {
+		t.markNeighborTriangle(n3);
+	}
+	if(n4 != null) {
+		ot.markNeighborTriangle(n4);
+	}
+	t.markNeighborTriangle(ot);
+};
+org_poly2tri_Triangle.prototype = {
+	points: null
+	,neighbors: null
+	,interior: null
+	,constrained_edge: null
+	,delaunay_edge: null
+	,containsPoint: function(point) {
+		if(!(point.equals(this.points[0]) || point.equals(this.points[1]))) {
+			return point.equals(this.points[2]);
+		} else {
+			return true;
+		}
+	}
+	,containsEdgePoints: function(p1,p2) {
+		if(this.containsPoint(p1)) {
+			return this.containsPoint(p2);
+		} else {
+			return false;
+		}
+	}
+	,markNeighbor: function(t,p1,p2) {
+		if(p1.equals(this.points[2]) && p2.equals(this.points[1]) || p1.equals(this.points[1]) && p2.equals(this.points[2])) {
+			this.neighbors[0] = t;
+			return;
+		}
+		if(p1.equals(this.points[0]) && p2.equals(this.points[2]) || p1.equals(this.points[2]) && p2.equals(this.points[0])) {
+			this.neighbors[1] = t;
+			return;
+		}
+		if(p1.equals(this.points[0]) && p2.equals(this.points[1]) || p1.equals(this.points[1]) && p2.equals(this.points[0])) {
+			this.neighbors[2] = t;
+			return;
+		}
+		throw haxe_Exception.thrown("Invalid markNeighbor call (1)!");
+	}
+	,markNeighborTriangle: function(that) {
+		if(that.containsEdgePoints(this.points[1],this.points[2])) {
+			this.neighbors[0] = that;
+			that.markNeighbor(this,this.points[1],this.points[2]);
+			return;
+		}
+		if(that.containsEdgePoints(this.points[0],this.points[2])) {
+			this.neighbors[1] = that;
+			that.markNeighbor(this,this.points[0],this.points[2]);
+			return;
+		}
+		if(that.containsEdgePoints(this.points[0],this.points[1])) {
+			this.neighbors[2] = that;
+			that.markNeighbor(this,this.points[0],this.points[1]);
+			return;
+		}
+	}
+	,getPointIndexOffset: function(p,offset) {
+		if(offset == null) {
+			offset = 0;
+		}
+		var no = offset;
+		while(no < 0) no += 3;
+		while(no > 2) no -= 3;
+		if(p.equals(this.points[0])) {
+			return no;
+		}
+		++no;
+		while(no < 0) no += 3;
+		while(no > 2) no -= 3;
+		if(p.equals(this.points[1])) {
+			return no;
+		}
+		++no;
+		while(no < 0) no += 3;
+		while(no > 2) no -= 3;
+		if(p.equals(this.points[2])) {
+			return no;
+		}
+		++no;
+		throw haxe_Exception.thrown("Triangle::Point not in triangle");
+	}
+	,pointCW: function(p) {
+		return this.points[this.getPointIndexOffset(p,-1)];
+	}
+	,pointCCW: function(p) {
+		return this.points[this.getPointIndexOffset(p,1)];
+	}
+	,neighborCW: function(p) {
+		return this.neighbors[this.getPointIndexOffset(p,1)];
+	}
+	,neighborCCW: function(p) {
+		return this.neighbors[this.getPointIndexOffset(p,-1)];
+	}
+	,getConstrainedEdgeCW: function(p) {
+		return this.constrained_edge[this.getPointIndexOffset(p,1)];
+	}
+	,setConstrainedEdgeCW: function(p,ce) {
+		return this.constrained_edge[this.getPointIndexOffset(p,1)] = ce;
+	}
+	,getConstrainedEdgeCCW: function(p) {
+		return this.constrained_edge[this.getPointIndexOffset(p,-1)];
+	}
+	,setConstrainedEdgeCCW: function(p,ce) {
+		return this.constrained_edge[this.getPointIndexOffset(p,-1)] = ce;
+	}
+	,getDelaunayEdgeCW: function(p) {
+		return this.delaunay_edge[this.getPointIndexOffset(p,1)];
+	}
+	,setDelaunayEdgeCW: function(p,e) {
+		return this.delaunay_edge[this.getPointIndexOffset(p,1)] = e;
+	}
+	,getDelaunayEdgeCCW: function(p) {
+		return this.delaunay_edge[this.getPointIndexOffset(p,-1)];
+	}
+	,setDelaunayEdgeCCW: function(p,e) {
+		return this.delaunay_edge[this.getPointIndexOffset(p,-1)] = e;
+	}
+	,neighborAcross: function(p) {
+		return this.neighbors[this.getPointIndexOffset(p,0)];
+	}
+	,oppositePoint: function(t,p) {
+		return this.pointCW(t.pointCW(p));
+	}
+	,legalize: function(opoint,npoint) {
+		if(npoint == null) {
+			this.legalize(this.points[0],opoint);
+			return;
+		}
+		if(opoint.equals(this.points[0])) {
+			this.points[1] = this.points[0];
+			this.points[0] = this.points[2];
+			this.points[2] = npoint;
+		} else if(opoint.equals(this.points[1])) {
+			this.points[2] = this.points[1];
+			this.points[1] = this.points[0];
+			this.points[0] = npoint;
+		} else if(opoint.equals(this.points[2])) {
+			this.points[0] = this.points[2];
+			this.points[2] = this.points[1];
+			this.points[1] = npoint;
+		} else {
+			throw haxe_Exception.thrown("Invalid js.poly2tri.Triangle.Legalize call!");
+		}
+	}
+	,index: function(p) {
+		try {
+			return this.getPointIndexOffset(p,0);
+		} catch( _g ) {
+			haxe_NativeStackTrace.lastError = _g;
+			var _g1 = haxe_Exception.caught(_g).unwrap();
+			if(typeof(_g1) == "string") {
+				var msg = _g1;
+				haxe_Log.trace(msg,{ fileName : "org/poly2tri/Triangle.hx", lineNumber : 235, className : "org.poly2tri.Triangle", methodName : "index"});
+			} else {
+				throw _g;
+			}
+		}
+		return -1;
+	}
+	,edgeIndex: function(p1,p2) {
+		if(p1.equals(this.points[0])) {
+			if(p2.equals(this.points[1])) {
+				return 2;
+			}
+			if(p2.equals(this.points[2])) {
+				return 1;
+			}
+		} else if(p1.equals(this.points[1])) {
+			if(p2.equals(this.points[2])) {
+				return 0;
+			}
+			if(p2.equals(this.points[0])) {
+				return 2;
+			}
+		} else if(p1.equals(this.points[2])) {
+			if(p2.equals(this.points[0])) {
+				return 1;
+			}
+			if(p2.equals(this.points[1])) {
+				return 0;
+			}
+		}
+		return -1;
+	}
+	,markConstrainedEdgeByIndex: function(index) {
+		this.constrained_edge[index] = true;
+	}
+	,markConstrainedEdgeByEdge: function(edge) {
+		this.markConstrainedEdgeByPoints(edge.p,edge.q);
+	}
+	,markConstrainedEdgeByPoints: function(p,q) {
+		if(q.equals(this.points[0]) && p.equals(this.points[1]) || q.equals(this.points[1]) && p.equals(this.points[0])) {
+			this.constrained_edge[2] = true;
+			return;
+		}
+		if(q.equals(this.points[0]) && p.equals(this.points[2]) || q.equals(this.points[2]) && p.equals(this.points[0])) {
+			this.constrained_edge[1] = true;
+			return;
+		}
+		if(q.equals(this.points[1]) && p.equals(this.points[2]) || q.equals(this.points[2]) && p.equals(this.points[1])) {
+			this.constrained_edge[0] = true;
+			return;
+		}
+	}
+	,isEdgeSide: function(ep,eq) {
+		var index = this.edgeIndex(ep,eq);
+		if(index == -1) {
+			return false;
+		}
+		this.markConstrainedEdgeByIndex(index);
+		var that = this.neighbors[index];
+		if(that != null) {
+			that.markConstrainedEdgeByPoints(ep,eq);
+		}
+		return true;
+	}
+	,clearNeigbors: function() {
+		this.neighbors[0] = null;
+		this.neighbors[1] = null;
+		this.neighbors[2] = null;
+	}
+	,clearDelunayEdges: function() {
+		this.delaunay_edge[0] = false;
+		this.delaunay_edge[1] = false;
+		this.delaunay_edge[2] = false;
+	}
+	,toString: function() {
+		return "Triangle(" + Std.string(this.points[0]) + ", " + Std.string(this.points[1]) + ", " + Std.string(this.points[2]) + ")";
+	}
+	,__class__: org_poly2tri_Triangle
+};
+var org_poly2tri_Utils = function() { };
+$hxClasses["org.poly2tri.Utils"] = org_poly2tri_Utils;
+org_poly2tri_Utils.__name__ = "org.poly2tri.Utils";
+org_poly2tri_Utils.insideIncircle = function(pa,pb,pc,pd) {
+	var adx = pa.x - pd.x;
+	var ady = pa.y - pd.y;
+	var bdx = pb.x - pd.x;
+	var bdy = pb.y - pd.y;
+	var adxbdy = adx * bdy;
+	var bdxady = bdx * ady;
+	var oabd = adxbdy - bdxady;
+	if(oabd <= 0) {
+		return false;
+	}
+	var cdx = pc.x - pd.x;
+	var cdy = pc.y - pd.y;
+	var cdxady = cdx * ady;
+	var adxcdy = adx * cdy;
+	var ocad = cdxady - adxcdy;
+	if(ocad <= 0) {
+		return false;
+	}
+	var bdxcdy = bdx * cdy;
+	var cdxbdy = cdx * bdy;
+	var alift = adx * adx + ady * ady;
+	var blift = bdx * bdx + bdy * bdy;
+	var clift = cdx * cdx + cdy * cdy;
+	var det = alift * (bdxcdy - cdxbdy) + blift * ocad + clift * oabd;
+	return det > 0;
+};
+org_poly2tri_Utils.inScanArea = function(pa,pb,pc,pd) {
+	var pdx = pd.x;
+	var pdy = pd.y;
+	var adx = pa.x - pdx;
+	var ady = pa.y - pdy;
+	var bdx = pb.x - pdx;
+	var bdy = pb.y - pdy;
+	var adxbdy = adx * bdy;
+	var bdxady = bdx * ady;
+	var oabd = adxbdy - bdxady;
+	if(oabd <= org_poly2tri_Constants.EPSILON) {
+		return false;
+	}
+	var cdx = pc.x - pdx;
+	var cdy = pc.y - pdy;
+	var cdxady = cdx * ady;
+	var adxcdy = adx * cdy;
+	var ocad = cdxady - adxcdy;
+	if(ocad <= org_poly2tri_Constants.EPSILON) {
+		return false;
+	}
+	return true;
+};
 var photonstorm_FlxMath = function() {
 };
 $hxClasses["photonstorm.FlxMath"] = photonstorm_FlxMath;
@@ -162875,36 +166873,6 @@ zpp_$nape_ZPP_$Const.POSINF = function() {
 zpp_$nape_ZPP_$Const.NEGINF = function() {
 	return -Infinity;
 };
-var zpp_$nape_ZPP_$ID = function() { };
-$hxClasses["zpp_nape.ZPP_ID"] = zpp_$nape_ZPP_$ID;
-zpp_$nape_ZPP_$ID.__name__ = "zpp_nape.ZPP_ID";
-zpp_$nape_ZPP_$ID.Interactor = function() {
-	return zpp_$nape_ZPP_$ID._Interactor++;
-};
-zpp_$nape_ZPP_$ID.Space = function() {
-	return zpp_$nape_ZPP_$ID._Space++;
-};
-zpp_$nape_ZPP_$ID.ZPP_SimpleVert = function() {
-	return zpp_$nape_ZPP_$ID._ZPP_SimpleVert++;
-};
-zpp_$nape_ZPP_$ID.ZPP_SimpleSeg = function() {
-	return zpp_$nape_ZPP_$ID._ZPP_SimpleSeg++;
-};
-zpp_$nape_ZPP_$ID.InteractionGroup = function() {
-	return zpp_$nape_ZPP_$ID._InteractionGroup++;
-};
-zpp_$nape_ZPP_$ID.Constraint = function() {
-	return zpp_$nape_ZPP_$ID._Constraint++;
-};
-zpp_$nape_ZPP_$ID.CbType = function() {
-	return zpp_$nape_ZPP_$ID._CbType++;
-};
-zpp_$nape_ZPP_$ID.CbSet = function() {
-	return zpp_$nape_ZPP_$ID._CbSet++;
-};
-zpp_$nape_ZPP_$ID.Listener = function() {
-	return zpp_$nape_ZPP_$ID._Listener++;
-};
 var zpp_$nape_callbacks_ZPP_$Callback = function() {
 	this.constraint = null;
 	this.body = null;
@@ -163765,2825 +167733,6 @@ zpp_$nape_callbacks_ZPP_$CbSetPair.prototype = {
 		}
 	}
 	,__class__: zpp_$nape_callbacks_ZPP_$CbSetPair
-};
-var zpp_$nape_util_ZNPList_$ZPP_$InteractionListener = function() {
-	this.length = 0;
-	this.pushmod = false;
-	this.modified = false;
-	this.head = null;
-};
-$hxClasses["zpp_nape.util.ZNPList_ZPP_InteractionListener"] = zpp_$nape_util_ZNPList_$ZPP_$InteractionListener;
-zpp_$nape_util_ZNPList_$ZPP_$InteractionListener.__name__ = "zpp_nape.util.ZNPList_ZPP_InteractionListener";
-zpp_$nape_util_ZNPList_$ZPP_$InteractionListener.prototype = {
-	head: null
-	,begin: function() {
-		return this.head;
-	}
-	,modified: null
-	,pushmod: null
-	,length: null
-	,setbegin: function(i) {
-		this.head = i;
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,inlined_add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,addAll: function(x) {
-		var cx_ite = x.head;
-		while(cx_ite != null) {
-			var i = cx_ite.elt;
-			this.add(i);
-			cx_ite = cx_ite.next;
-		}
-	}
-	,insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,inlined_insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,inlined_pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,inlined_pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				this.erase(pre);
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,inlined_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,inlined_try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,inlined_erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,splice: function(pre,n) {
-		while(n-- > 0 && pre.next != null) this.erase(pre);
-		return pre.next;
-	}
-	,clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,inlined_clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,reverse: function() {
-		var cur = this.head;
-		var pre = null;
-		while(cur != null) {
-			var nx = cur.next;
-			cur.next = pre;
-			this.head = cur;
-			pre = cur;
-			cur = nx;
-		}
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,empty: function() {
-		return this.head == null;
-	}
-	,size: function() {
-		return this.length;
-	}
-	,has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,inlined_has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,front: function() {
-		return this.head.elt;
-	}
-	,back: function() {
-		var ret = this.head;
-		var cur = ret;
-		while(cur != null) {
-			ret = cur;
-			cur = cur.next;
-		}
-		return ret.elt;
-	}
-	,iterator_at: function(ind) {
-		var ret = this.head;
-		while(ind-- > 0 && ret != null) ret = ret.next;
-		return ret;
-	}
-	,at: function(ind) {
-		var it = this.iterator_at(ind);
-		if(it != null) {
-			return it.elt;
-		} else {
-			return null;
-		}
-	}
-	,__class__: zpp_$nape_util_ZNPList_$ZPP_$InteractionListener
-};
-var zpp_$nape_util_ZNPList_$ZPP_$BodyListener = function() {
-	this.length = 0;
-	this.pushmod = false;
-	this.modified = false;
-	this.head = null;
-};
-$hxClasses["zpp_nape.util.ZNPList_ZPP_BodyListener"] = zpp_$nape_util_ZNPList_$ZPP_$BodyListener;
-zpp_$nape_util_ZNPList_$ZPP_$BodyListener.__name__ = "zpp_nape.util.ZNPList_ZPP_BodyListener";
-zpp_$nape_util_ZNPList_$ZPP_$BodyListener.prototype = {
-	head: null
-	,begin: function() {
-		return this.head;
-	}
-	,modified: null
-	,pushmod: null
-	,length: null
-	,setbegin: function(i) {
-		this.head = i;
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,inlined_add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,addAll: function(x) {
-		var cx_ite = x.head;
-		while(cx_ite != null) {
-			var i = cx_ite.elt;
-			this.add(i);
-			cx_ite = cx_ite.next;
-		}
-	}
-	,insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,inlined_insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,inlined_pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,inlined_pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				this.erase(pre);
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,inlined_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,inlined_try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,inlined_erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,splice: function(pre,n) {
-		while(n-- > 0 && pre.next != null) this.erase(pre);
-		return pre.next;
-	}
-	,clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,inlined_clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,reverse: function() {
-		var cur = this.head;
-		var pre = null;
-		while(cur != null) {
-			var nx = cur.next;
-			cur.next = pre;
-			this.head = cur;
-			pre = cur;
-			cur = nx;
-		}
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,empty: function() {
-		return this.head == null;
-	}
-	,size: function() {
-		return this.length;
-	}
-	,has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,inlined_has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,front: function() {
-		return this.head.elt;
-	}
-	,back: function() {
-		var ret = this.head;
-		var cur = ret;
-		while(cur != null) {
-			ret = cur;
-			cur = cur.next;
-		}
-		return ret.elt;
-	}
-	,iterator_at: function(ind) {
-		var ret = this.head;
-		while(ind-- > 0 && ret != null) ret = ret.next;
-		return ret;
-	}
-	,at: function(ind) {
-		var it = this.iterator_at(ind);
-		if(it != null) {
-			return it.elt;
-		} else {
-			return null;
-		}
-	}
-	,__class__: zpp_$nape_util_ZNPList_$ZPP_$BodyListener
-};
-var zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener = function() {
-	this.length = 0;
-	this.pushmod = false;
-	this.modified = false;
-	this.head = null;
-};
-$hxClasses["zpp_nape.util.ZNPList_ZPP_ConstraintListener"] = zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener;
-zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener.__name__ = "zpp_nape.util.ZNPList_ZPP_ConstraintListener";
-zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener.prototype = {
-	head: null
-	,begin: function() {
-		return this.head;
-	}
-	,modified: null
-	,pushmod: null
-	,length: null
-	,setbegin: function(i) {
-		this.head = i;
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,inlined_add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,addAll: function(x) {
-		var cx_ite = x.head;
-		while(cx_ite != null) {
-			var i = cx_ite.elt;
-			this.add(i);
-			cx_ite = cx_ite.next;
-		}
-	}
-	,insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,inlined_insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,inlined_pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,inlined_pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				this.erase(pre);
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,inlined_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,inlined_try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,inlined_erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,splice: function(pre,n) {
-		while(n-- > 0 && pre.next != null) this.erase(pre);
-		return pre.next;
-	}
-	,clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,inlined_clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,reverse: function() {
-		var cur = this.head;
-		var pre = null;
-		while(cur != null) {
-			var nx = cur.next;
-			cur.next = pre;
-			this.head = cur;
-			pre = cur;
-			cur = nx;
-		}
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,empty: function() {
-		return this.head == null;
-	}
-	,size: function() {
-		return this.length;
-	}
-	,has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,inlined_has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,front: function() {
-		return this.head.elt;
-	}
-	,back: function() {
-		var ret = this.head;
-		var cur = ret;
-		while(cur != null) {
-			ret = cur;
-			cur = cur.next;
-		}
-		return ret.elt;
-	}
-	,iterator_at: function(ind) {
-		var ret = this.head;
-		while(ind-- > 0 && ret != null) ret = ret.next;
-		return ret;
-	}
-	,at: function(ind) {
-		var it = this.iterator_at(ind);
-		if(it != null) {
-			return it.elt;
-		} else {
-			return null;
-		}
-	}
-	,__class__: zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener
-};
-var zpp_$nape_util_ZNPList_$ZPP_$Constraint = function() {
-	this.length = 0;
-	this.pushmod = false;
-	this.modified = false;
-	this.head = null;
-};
-$hxClasses["zpp_nape.util.ZNPList_ZPP_Constraint"] = zpp_$nape_util_ZNPList_$ZPP_$Constraint;
-zpp_$nape_util_ZNPList_$ZPP_$Constraint.__name__ = "zpp_nape.util.ZNPList_ZPP_Constraint";
-zpp_$nape_util_ZNPList_$ZPP_$Constraint.prototype = {
-	head: null
-	,begin: function() {
-		return this.head;
-	}
-	,modified: null
-	,pushmod: null
-	,length: null
-	,setbegin: function(i) {
-		this.head = i;
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,inlined_add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,addAll: function(x) {
-		var cx_ite = x.head;
-		while(cx_ite != null) {
-			var i = cx_ite.elt;
-			this.add(i);
-			cx_ite = cx_ite.next;
-		}
-	}
-	,insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,inlined_insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Constraint();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,inlined_pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,inlined_pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				this.erase(pre);
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,inlined_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,inlined_try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,inlined_erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,splice: function(pre,n) {
-		while(n-- > 0 && pre.next != null) this.erase(pre);
-		return pre.next;
-	}
-	,clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,inlined_clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Constraint.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,reverse: function() {
-		var cur = this.head;
-		var pre = null;
-		while(cur != null) {
-			var nx = cur.next;
-			cur.next = pre;
-			this.head = cur;
-			pre = cur;
-			cur = nx;
-		}
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,empty: function() {
-		return this.head == null;
-	}
-	,size: function() {
-		return this.length;
-	}
-	,has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,inlined_has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,front: function() {
-		return this.head.elt;
-	}
-	,back: function() {
-		var ret = this.head;
-		var cur = ret;
-		while(cur != null) {
-			ret = cur;
-			cur = cur.next;
-		}
-		return ret.elt;
-	}
-	,iterator_at: function(ind) {
-		var ret = this.head;
-		while(ind-- > 0 && ret != null) ret = ret.next;
-		return ret;
-	}
-	,at: function(ind) {
-		var it = this.iterator_at(ind);
-		if(it != null) {
-			return it.elt;
-		} else {
-			return null;
-		}
-	}
-	,__class__: zpp_$nape_util_ZNPList_$ZPP_$Constraint
-};
-var zpp_$nape_util_ZNPList_$ZPP_$Interactor = function() {
-	this.length = 0;
-	this.pushmod = false;
-	this.modified = false;
-	this.head = null;
-};
-$hxClasses["zpp_nape.util.ZNPList_ZPP_Interactor"] = zpp_$nape_util_ZNPList_$ZPP_$Interactor;
-zpp_$nape_util_ZNPList_$ZPP_$Interactor.__name__ = "zpp_nape.util.ZNPList_ZPP_Interactor";
-zpp_$nape_util_ZNPList_$ZPP_$Interactor.prototype = {
-	head: null
-	,begin: function() {
-		return this.head;
-	}
-	,modified: null
-	,pushmod: null
-	,length: null
-	,setbegin: function(i) {
-		this.head = i;
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,inlined_add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,addAll: function(x) {
-		var cx_ite = x.head;
-		while(cx_ite != null) {
-			var i = cx_ite.elt;
-			this.add(i);
-			cx_ite = cx_ite.next;
-		}
-	}
-	,insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,inlined_insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$Interactor();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,inlined_pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,inlined_pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				this.erase(pre);
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,inlined_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,inlined_try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,inlined_erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,splice: function(pre,n) {
-		while(n-- > 0 && pre.next != null) this.erase(pre);
-		return pre.next;
-	}
-	,clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,inlined_clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$Interactor.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,reverse: function() {
-		var cur = this.head;
-		var pre = null;
-		while(cur != null) {
-			var nx = cur.next;
-			cur.next = pre;
-			this.head = cur;
-			pre = cur;
-			cur = nx;
-		}
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,empty: function() {
-		return this.head == null;
-	}
-	,size: function() {
-		return this.length;
-	}
-	,has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,inlined_has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,front: function() {
-		return this.head.elt;
-	}
-	,back: function() {
-		var ret = this.head;
-		var cur = ret;
-		while(cur != null) {
-			ret = cur;
-			cur = cur.next;
-		}
-		return ret.elt;
-	}
-	,iterator_at: function(ind) {
-		var ret = this.head;
-		while(ind-- > 0 && ret != null) ret = ret.next;
-		return ret;
-	}
-	,at: function(ind) {
-		var it = this.iterator_at(ind);
-		if(it != null) {
-			return it.elt;
-		} else {
-			return null;
-		}
-	}
-	,__class__: zpp_$nape_util_ZNPList_$ZPP_$Interactor
-};
-var zpp_$nape_util_ZNPList_$ZPP_$CbSet = function() {
-	this.length = 0;
-	this.pushmod = false;
-	this.modified = false;
-	this.head = null;
-};
-$hxClasses["zpp_nape.util.ZNPList_ZPP_CbSet"] = zpp_$nape_util_ZNPList_$ZPP_$CbSet;
-zpp_$nape_util_ZNPList_$ZPP_$CbSet.__name__ = "zpp_nape.util.ZNPList_ZPP_CbSet";
-zpp_$nape_util_ZNPList_$ZPP_$CbSet.prototype = {
-	head: null
-	,begin: function() {
-		return this.head;
-	}
-	,modified: null
-	,pushmod: null
-	,length: null
-	,setbegin: function(i) {
-		this.head = i;
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,inlined_add: function(o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		temp.next = this.head;
-		this.head = temp;
-		this.modified = true;
-		this.length++;
-		return o;
-	}
-	,addAll: function(x) {
-		var cx_ite = x.head;
-		while(cx_ite != null) {
-			var i = cx_ite.elt;
-			this.add(i);
-			cx_ite = cx_ite.next;
-		}
-	}
-	,insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,inlined_insert: function(cur,o) {
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$CbSet();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = o;
-		var temp = ret;
-		if(cur == null) {
-			temp.next = this.head;
-			this.head = temp;
-		} else {
-			temp.next = cur.next;
-			cur.next = temp;
-		}
-		this.pushmod = this.modified = true;
-		this.length++;
-		return temp;
-	}
-	,pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,inlined_pop: function() {
-		var ret = this.head;
-		this.head = ret.next;
-		var o = ret;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-		if(this.head == null) {
-			this.pushmod = true;
-		}
-		this.modified = true;
-		this.length--;
-	}
-	,pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,inlined_pop_unsafe: function() {
-		var ret = this.head.elt;
-		this.pop();
-		return ret;
-	}
-	,remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				this.erase(pre);
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,inlined_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-	}
-	,inlined_try_remove: function(obj) {
-		var pre = null;
-		var cur = this.head;
-		var ret = false;
-		while(cur != null) {
-			if(cur.elt == obj) {
-				var old;
-				var ret1;
-				if(pre == null) {
-					old = this.head;
-					ret1 = old.next;
-					this.head = ret1;
-					if(this.head == null) {
-						this.pushmod = true;
-					}
-				} else {
-					old = pre.next;
-					ret1 = old.next;
-					pre.next = ret1;
-					if(ret1 == null) {
-						this.pushmod = true;
-					}
-				}
-				var o = old;
-				o.elt = null;
-				o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-				zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-				this.modified = true;
-				this.length--;
-				this.pushmod = true;
-				ret = true;
-				break;
-			}
-			pre = cur;
-			cur = cur.next;
-		}
-		return ret;
-	}
-	,erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,inlined_erase: function(pre) {
-		var old;
-		var ret;
-		if(pre == null) {
-			old = this.head;
-			ret = old.next;
-			this.head = ret;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-		} else {
-			old = pre.next;
-			ret = old.next;
-			pre.next = ret;
-			if(ret == null) {
-				this.pushmod = true;
-			}
-		}
-		var o = old;
-		o.elt = null;
-		o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-		zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-		this.modified = true;
-		this.length--;
-		this.pushmod = true;
-		return ret;
-	}
-	,splice: function(pre,n) {
-		while(n-- > 0 && pre.next != null) this.erase(pre);
-		return pre.next;
-	}
-	,clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,inlined_clear: function() {
-		while(this.head != null) {
-			var ret = this.head;
-			this.head = ret.next;
-			var o = ret;
-			o.elt = null;
-			o.next = zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$CbSet.zpp_pool = o;
-			if(this.head == null) {
-				this.pushmod = true;
-			}
-			this.modified = true;
-			this.length--;
-		}
-		this.pushmod = true;
-	}
-	,reverse: function() {
-		var cur = this.head;
-		var pre = null;
-		while(cur != null) {
-			var nx = cur.next;
-			cur.next = pre;
-			this.head = cur;
-			pre = cur;
-			cur = nx;
-		}
-		this.modified = true;
-		this.pushmod = true;
-	}
-	,empty: function() {
-		return this.head == null;
-	}
-	,size: function() {
-		return this.length;
-	}
-	,has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,inlined_has: function(obj) {
-		var ret;
-		ret = false;
-		var cx_ite = this.head;
-		while(cx_ite != null) {
-			var npite = cx_ite.elt;
-			if(npite == obj) {
-				ret = true;
-				break;
-			}
-			cx_ite = cx_ite.next;
-		}
-		return ret;
-	}
-	,front: function() {
-		return this.head.elt;
-	}
-	,back: function() {
-		var ret = this.head;
-		var cur = ret;
-		while(cur != null) {
-			ret = cur;
-			cur = cur.next;
-		}
-		return ret.elt;
-	}
-	,iterator_at: function(ind) {
-		var ret = this.head;
-		while(ind-- > 0 && ret != null) ret = ret.next;
-		return ret;
-	}
-	,at: function(ind) {
-		var it = this.iterator_at(ind);
-		if(it != null) {
-			return it.elt;
-		} else {
-			return null;
-		}
-	}
-	,__class__: zpp_$nape_util_ZNPList_$ZPP_$CbSet
-};
-var zpp_$nape_callbacks_ZPP_$CbType = function() {
-	this.conlisteners = null;
-	this.bodylisteners = null;
-	this.listeners = null;
-	this.cbsets = null;
-	this.id = 0;
-	this.userData = null;
-	this.outer = null;
-	this.id = zpp_$nape_ZPP_$ID.CbType();
-	this.listeners = new zpp_$nape_util_ZNPList_$ZPP_$InteractionListener();
-	this.bodylisteners = new zpp_$nape_util_ZNPList_$ZPP_$BodyListener();
-	this.conlisteners = new zpp_$nape_util_ZNPList_$ZPP_$ConstraintListener();
-	this.constraints = new zpp_$nape_util_ZNPList_$ZPP_$Constraint();
-	this.interactors = new zpp_$nape_util_ZNPList_$ZPP_$Interactor();
-	this.cbsets = new zpp_$nape_util_ZNPList_$ZPP_$CbSet();
-};
-$hxClasses["zpp_nape.callbacks.ZPP_CbType"] = zpp_$nape_callbacks_ZPP_$CbType;
-zpp_$nape_callbacks_ZPP_$CbType.__name__ = "zpp_nape.callbacks.ZPP_CbType";
-zpp_$nape_callbacks_ZPP_$CbType.setlt = function(a,b) {
-	return a.id < b.id;
-};
-zpp_$nape_callbacks_ZPP_$CbType.prototype = {
-	outer: null
-	,userData: null
-	,id: null
-	,cbsets: null
-	,interactors: null
-	,wrap_interactors: null
-	,constraints: null
-	,wrap_constraints: null
-	,addConstraint: function(con) {
-		this.constraints.add(con);
-	}
-	,addInteractor: function(intx) {
-		this.interactors.add(intx);
-	}
-	,remConstraint: function(con) {
-		this.constraints.remove(con);
-	}
-	,remInteractor: function(intx) {
-		this.interactors.remove(intx);
-	}
-	,listeners: null
-	,addint: function(x) {
-		var pre = null;
-		var cx_ite = this.listeners.head;
-		while(cx_ite != null) {
-			var j = cx_ite.elt;
-			if(x.precedence > j.precedence || x.precedence == j.precedence && x.id > j.id) {
-				break;
-			}
-			pre = cx_ite;
-			cx_ite = cx_ite.next;
-		}
-		var _this = this.listeners;
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$InteractionListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = x;
-		var temp = ret;
-		if(pre == null) {
-			temp.next = _this.head;
-			_this.head = temp;
-		} else {
-			temp.next = pre.next;
-			pre.next = temp;
-		}
-		_this.pushmod = _this.modified = true;
-		_this.length++;
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_listeners = true;
-			cb.invalidate_pairs();
-			cx_ite = cx_ite.next;
-		}
-	}
-	,removeint: function(x) {
-		this.listeners.remove(x);
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_listeners = true;
-			cb.invalidate_pairs();
-			cx_ite = cx_ite.next;
-		}
-	}
-	,invalidateint: function() {
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_listeners = true;
-			cb.invalidate_pairs();
-			cx_ite = cx_ite.next;
-		}
-	}
-	,bodylisteners: null
-	,addbody: function(x) {
-		var pre = null;
-		var cx_ite = this.bodylisteners.head;
-		while(cx_ite != null) {
-			var j = cx_ite.elt;
-			if(x.precedence > j.precedence || x.precedence == j.precedence && x.id > j.id) {
-				break;
-			}
-			pre = cx_ite;
-			cx_ite = cx_ite.next;
-		}
-		var _this = this.bodylisteners;
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$BodyListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$BodyListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = x;
-		var temp = ret;
-		if(pre == null) {
-			temp.next = _this.head;
-			_this.head = temp;
-		} else {
-			temp.next = pre.next;
-			pre.next = temp;
-		}
-		_this.pushmod = _this.modified = true;
-		_this.length++;
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_bodylisteners = true;
-			cx_ite = cx_ite.next;
-		}
-	}
-	,removebody: function(x) {
-		this.bodylisteners.remove(x);
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_bodylisteners = true;
-			cx_ite = cx_ite.next;
-		}
-	}
-	,invalidatebody: function() {
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_bodylisteners = true;
-			cx_ite = cx_ite.next;
-		}
-	}
-	,conlisteners: null
-	,addconstraint: function(x) {
-		var pre = null;
-		var cx_ite = this.conlisteners.head;
-		while(cx_ite != null) {
-			var j = cx_ite.elt;
-			if(x.precedence > j.precedence || x.precedence == j.precedence && x.id > j.id) {
-				break;
-			}
-			pre = cx_ite;
-			cx_ite = cx_ite.next;
-		}
-		var _this = this.conlisteners;
-		var ret;
-		if(zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool == null) {
-			ret = new zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener();
-		} else {
-			ret = zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool;
-			zpp_$nape_util_ZNPNode_$ZPP_$ConstraintListener.zpp_pool = ret.next;
-			ret.next = null;
-		}
-		ret.elt = x;
-		var temp = ret;
-		if(pre == null) {
-			temp.next = _this.head;
-			_this.head = temp;
-		} else {
-			temp.next = pre.next;
-			pre.next = temp;
-		}
-		_this.pushmod = _this.modified = true;
-		_this.length++;
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_conlisteners = true;
-			cx_ite = cx_ite.next;
-		}
-	}
-	,removeconstraint: function(x) {
-		this.conlisteners.remove(x);
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_conlisteners = true;
-			cx_ite = cx_ite.next;
-		}
-	}
-	,invalidateconstraint: function() {
-		var cx_ite = this.cbsets.head;
-		while(cx_ite != null) {
-			var cb = cx_ite.elt;
-			cb.zip_conlisteners = true;
-			cx_ite = cx_ite.next;
-		}
-	}
-	,__class__: zpp_$nape_callbacks_ZPP_$CbType
 };
 var zpp_$nape_util_ZPP_$Flags = function() { };
 $hxClasses["zpp_nape.util.ZPP_Flags"] = zpp_$nape_util_ZPP_$Flags;
@@ -248998,8 +250147,6 @@ openfl_display_DisplayObject.__tempStack = new lime_utils_ObjectPool(function() 
 },function(stack) {
 	stack.set_length(0);
 });
-openfl_text_Font.__fontByName = new haxe_ds_StringMap();
-openfl_text_Font.__registeredFonts = [];
 flixel_FlxBasic.idEnumerator = 0;
 flixel_math_FlxRect._pool = (function($this) {
 	var $r;
@@ -249081,6 +250228,27 @@ flixel_FlxObject._secondSeparateFlxRect = (function($this) {
 	return $r;
 }(this));
 flixel_FlxSprite.defaultAntialiasing = false;
+zpp_$nape_callbacks_ZPP_$CbType.ANY_SHAPE = new nape_callbacks_CbType();
+zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY = new nape_callbacks_CbType();
+zpp_$nape_callbacks_ZPP_$CbType.ANY_COMPOUND = new nape_callbacks_CbType();
+zpp_$nape_callbacks_ZPP_$CbType.ANY_CONSTRAINT = new nape_callbacks_CbType();
+zpp_$nape_ZPP_$ID._Interactor = 0;
+zpp_$nape_ZPP_$ID._Space = 0;
+zpp_$nape_ZPP_$ID._ZPP_SimpleVert = 0;
+zpp_$nape_ZPP_$ID._ZPP_SimpleSeg = 0;
+zpp_$nape_ZPP_$ID._InteractionGroup = 0;
+zpp_$nape_ZPP_$ID._Constraint = 0;
+zpp_$nape_ZPP_$ID._CbType = 0;
+zpp_$nape_ZPP_$ID._CbSet = 0;
+zpp_$nape_ZPP_$ID._Listener = 0;
+Character.GROUP_PLAYER = 256;
+Character.GROUP_TARGET = 512;
+Character.GROUP_BULLET = 1024;
+Character.MASK_ALL = -1;
+Character.CB_PLAYER = new nape_callbacks_CbType();
+Character.CB_TARGET = new nape_callbacks_CbType();
+openfl_text_Font.__fontByName = new haxe_ds_StringMap();
+openfl_text_Font.__registeredFonts = [];
 Xml.Element = 0;
 Xml.PCData = 1;
 Xml.CData = 2;
@@ -252714,6 +253882,16 @@ openfl_utils__$internal_TouchData.__pool = new lime_utils_ObjectPool(function() 
 	data.reset();
 });
 openfl_utils__$internal_format_amf3_AMF3Array.__meta__ = { fields : { extra : { optional : null}}};
+org_poly2tri_Constants.kAlpha = 0.3;
+org_poly2tri_Constants.EPSILON = 1e-12;
+org_poly2tri_Constants.PI_2 = Math.PI / 2;
+org_poly2tri_Constants.PI_3div4 = 3 * Math.PI / 4;
+org_poly2tri_Orientation.CW = 1;
+org_poly2tri_Orientation.CCW = -1;
+org_poly2tri_Orientation.COLLINEAR = 0;
+org_poly2tri_Point.C_ID = 0;
+org_poly2tri_Triangle.CW_OFFSET = 1;
+org_poly2tri_Triangle.CCW_OFFSET = -1;
 photonstorm_FlxMath.getrandmax = js_Boot.__cast(Math.pow(2,16) , Int);
 photonstorm_FlxMath.mr = 0;
 photonstorm_FlxMath.cosTable = [];
@@ -252736,22 +253914,9 @@ photonstorm_FlxWeapon.FIRE_AT_TARGET = 3;
 photonstorm_FlxWeapon.FIRE_FROM_ANGLE = 4;
 photonstorm_FlxWeapon.FIRE_FROM_PARENT_ANGLE = 5;
 zpp_$nape_ZPP_$Const.FMAX = 1e100;
-zpp_$nape_ZPP_$ID._Interactor = 0;
-zpp_$nape_ZPP_$ID._Space = 0;
-zpp_$nape_ZPP_$ID._ZPP_SimpleVert = 0;
-zpp_$nape_ZPP_$ID._ZPP_SimpleSeg = 0;
-zpp_$nape_ZPP_$ID._InteractionGroup = 0;
-zpp_$nape_ZPP_$ID._Constraint = 0;
-zpp_$nape_ZPP_$ID._CbType = 0;
-zpp_$nape_ZPP_$ID._CbSet = 0;
-zpp_$nape_ZPP_$ID._Listener = 0;
 zpp_$nape_callbacks_ZPP_$Callback.zpp_pool = null;
 zpp_$nape_callbacks_ZPP_$CbSet.zpp_pool = null;
 zpp_$nape_callbacks_ZPP_$CbSetPair.zpp_pool = null;
-zpp_$nape_callbacks_ZPP_$CbType.ANY_SHAPE = new nape_callbacks_CbType();
-zpp_$nape_callbacks_ZPP_$CbType.ANY_BODY = new nape_callbacks_CbType();
-zpp_$nape_callbacks_ZPP_$CbType.ANY_COMPOUND = new nape_callbacks_CbType();
-zpp_$nape_callbacks_ZPP_$CbType.ANY_CONSTRAINT = new nape_callbacks_CbType();
 zpp_$nape_util_ZPP_$Flags.internal = false;
 zpp_$nape_util_ZPP_$Flags.id_ImmState_ACCEPT = 1;
 zpp_$nape_util_ZPP_$Flags.id_ImmState_IGNORE = 2;

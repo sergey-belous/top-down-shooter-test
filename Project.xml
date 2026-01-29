@@ -31,7 +31,7 @@
 
 	<set name="BUILD_DIR" value="export" />
 	<source path="source" />
-	<!-- <assets path="assets" /> -->
+	<assets path="assets" />
 
 	<!-- <haxedef name="FLX_NO_CACHE_BUSTING" /> -->
 
@@ -47,6 +47,9 @@
 
 	<!--In case you want to use nape with flixel-->
 	<haxelib name="nape-haxe4" />
+
+	<!--Poly2tri triangulation for Terrain -->
+	<haxelib name="poly2trihx" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 

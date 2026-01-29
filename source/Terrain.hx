@@ -18,7 +18,7 @@ import openfl.Assets;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 
-class Terrain
+class Terrain #if flash implements nape.geom.IsoFunction #end
 {
 	var cellSize:Float;
 	var subSize:Float;
@@ -40,7 +40,7 @@ class Terrain
 
 	var flashSprite:Sprite;
 
-	var graphicPath:String = "";
+	var graphicPath:String = "assets/images/Patagonia30.jpg";
 
 	public function new(bitmap:BitmapData, cellSize:Float, subSize:Float)
 	{
@@ -65,13 +65,12 @@ class Terrain
 
 		if (FlxG.renderBlit)
 		{
-			sprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, 0xff00ff00);
+			sprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
 			flashSprite = new Sprite();
 		}
 		else
 		{
 			sprite = megaStrip;
-            sprite.color = 0xFF00FF;
 		}
 	}
 
@@ -91,13 +90,13 @@ class Terrain
 		if (y1 >= height)
 			y1 = height - 1;
 
-		// var points:Array<org.poly2tri.Point> = [];
-		// var sweep:org.poly2tri.Sweep;
-		// var i:Int = 0;
+		var points:Array<org.poly2tri.Point> = [];
+		var sweep:org.poly2tri.Sweep;
+		var i:Int = 0;
 
-		// var context:org.poly2tri.SweepContext;
-		// var triangle:org.poly2tri.Triangle;
-		// var pl:Array<org.poly2tri.Point>;
+		var context:org.poly2tri.SweepContext;
+		var triangle:org.poly2tri.Triangle;
+		var pl:Array<org.poly2tri.Point>;
 
 		var strip:FlxStrip;
 		var vertices:DrawData<Float>;
@@ -172,77 +171,77 @@ class Terrain
 				ids.splice(0, ids.length);
 				uvtData.splice(0, uvtData.length);
 
-			// 	i = 0;
+				i = 0;
 
-			// 	for (shape in b.shapes)
-			// 	{
-			// 		if ((shape is Polygon))
-			// 		{
-			// 			var poly:Polygon = cast(shape, Polygon);
+				for (shape in b.shapes)
+				{
+					if ((shape is Polygon))
+					{
+						var poly:Polygon = cast(shape, Polygon);
 
-			// 			var context = new org.poly2tri.SweepContext();
-			// 			points = [];
+						var context = new org.poly2tri.SweepContext();
+						points = [];
 
-			// 			for (v in poly.worldVerts)
-			// 			{
-			// 				points.push(new org.poly2tri.Point(v.x, v.y));
-			// 			}
+						for (v in poly.worldVerts)
+						{
+							points.push(new org.poly2tri.Point(v.x, v.y));
+						}
 
-			// 			context.addPolyline(points);
-			// 			sweep = new org.poly2tri.Sweep(context);
-			// 			sweep.triangulate();
+						context.addPolyline(points);
+						sweep = new org.poly2tri.Sweep(context);
+						sweep.triangulate();
 
-			// 			for (triangle in context.triangles)
-			// 			{
-			// 				pl = triangle.points;
+						for (triangle in context.triangles)
+						{
+							pl = triangle.points;
 
-			// 				vertices.push(x_1 = pl[0].x);
-			// 				vertices.push(y_1 = pl[0].y);
+							vertices.push(x_1 = pl[0].x);
+							vertices.push(y_1 = pl[0].y);
 
-			// 				ids.push(i++);
+							ids.push(i++);
 
-			// 				vertices.push(x_2 = pl[1].x);
-			// 				vertices.push(y_2 = pl[1].y);
+							vertices.push(x_2 = pl[1].x);
+							vertices.push(y_2 = pl[1].y);
 
-			// 				ids.push(i++);
+							ids.push(i++);
 
-			// 				vertices.push(x_3 = pl[2].x);
-			// 				vertices.push(y_3 = pl[2].y);
+							vertices.push(x_3 = pl[2].x);
+							vertices.push(y_3 = pl[2].y);
 
-			// 				ids.push(i++);
+							ids.push(i++);
 
-			// 				maxX = Math.max(x_1, Math.max(x_2, x_3));
-			// 				maxY = Math.max(y_1, Math.max(y_2, y_3));
+							maxX = Math.max(x_1, Math.max(x_2, x_3));
+							maxY = Math.max(y_1, Math.max(y_2, y_3));
 
-			// 				u = (pl[0].x % cellSize) / cellSize;
-			// 				v = (pl[0].y % cellSize) / cellSize;
+							u = (pl[0].x % cellSize) / cellSize;
+							v = (pl[0].y % cellSize) / cellSize;
 
-			// 				u = (u == 0 && pl[0].x == maxX) ? 1 : u;
-			// 				v = (v == 0 && pl[0].y == maxY) ? 1 : v;
+							u = (u == 0 && pl[0].x == maxX) ? 1 : u;
+							v = (v == 0 && pl[0].y == maxY) ? 1 : v;
 
-			// 				uvtData.push(u);
-			// 				uvtData.push(v);
+							uvtData.push(u);
+							uvtData.push(v);
 
-			// 				u = (pl[1].x % cellSize) / cellSize;
-			// 				v = (pl[1].y % cellSize) / cellSize;
+							u = (pl[1].x % cellSize) / cellSize;
+							v = (pl[1].y % cellSize) / cellSize;
 
-			// 				u = (u == 0 && pl[1].x == maxX) ? 1 : u;
-			// 				v = (v == 0 && pl[1].y == maxY) ? 1 : v;
+							u = (u == 0 && pl[1].x == maxX) ? 1 : u;
+							v = (v == 0 && pl[1].y == maxY) ? 1 : v;
 
-			// 				uvtData.push(u);
-			// 				uvtData.push(v);
+							uvtData.push(u);
+							uvtData.push(v);
 
-			// 				u = (pl[2].x % cellSize) / cellSize;
-			// 				v = (pl[2].y % cellSize) / cellSize;
+							u = (pl[2].x % cellSize) / cellSize;
+							v = (pl[2].y % cellSize) / cellSize;
 
-			// 				u = (u == 0 && pl[2].x == maxX) ? 1 : u;
-			// 				v = (v == 0 && pl[2].y == maxY) ? 1 : v;
+							u = (u == 0 && pl[2].x == maxX) ? 1 : u;
+							v = (v == 0 && pl[2].y == maxY) ? 1 : v;
 
-			// 				uvtData.push(u);
-			// 				uvtData.push(v);
-			// 			}
-			// 		}
-			// 	}
+							uvtData.push(u);
+							uvtData.push(v);
+						}
+					}
+				}
 			}
 		}
 
