@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.nape.FlxNapeSprite;
+import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.util.FlxColor;
 import nape.callbacks.CbType;
 import nape.dynamics.InteractionFilter;
@@ -42,8 +43,12 @@ class HealthBar extends FlxSprite
 			sprite.makeGraphic(32, 4, FlxColor.RED);
 		}
 
-		// Позиционируем над родительским блоком
-		setPosition(parentBrick.x, parentBrick.y - 8);
+		if (parentBrick.body == null)
+		{
+			// setPosition(parentBrick.x + parentBrick.width, parentBrick.y - 8 + parentBrick.height);
+			return;
+		}
+		setPosition(parentBrick.body.position.x - (parentBrick.width / 2), parentBrick.body.position.y - (parentBrick.height / 2) - 8);
 	}
 }
 
@@ -69,18 +74,10 @@ class Character extends FlxNapeSprite
 	public var rotationSnapSpeed:Float = 0.1; // Порог угловой скорости (рад/с)
 	public var direction = 1;
 
-	public function new(width:Int, height:Int, xPos:Float, yPos:Float, color:FlxColor, angularVel:Float = 0, withHealthBar:Bool = false)
+	public function new(width:Int, height:Int, xPos:Float, yPos:Float, angularVel:Float = 0, withHealthBar:Bool = false)
 	{
-		super();
-		makeGraphic(width, height, color);
-		createRectangularBody();
+		super(xPos, yPos, null, false);
 		antialiasing = true;
-		body.angularVel = angularVel;
-		scale.x = 1;
-		scale.y = 1;
-		setBodyMaterial(.5, .5, .5, 2);
-		body.position.y = yPos;
-		body.position.x = xPos;
 
 		if (withHealthBar)
 		{
@@ -190,26 +187,26 @@ class Character extends FlxNapeSprite
 	}
 	public function updateMovementAnimation():Void
 	{
-		if (body.velocity.length > 0 && body.velocity.x < 0)
+		if (animation == null)
 		{
-			direction = 1;
-			animation.play('moveRight');
+			return;
 		}
-		else if (body.velocity.length > 0 && body.velocity.x > 0)
+		var speed = body.velocity.length;
+		if (speed > 0)
 		{
-			animation.play('moveLeft');
-			direction = -1;
+			if (body.velocity.x < 0)
+			{
+				direction = -1;
+			}
+			else if (body.velocity.x > 0)
+			{
+				direction = 1;
+			}
+			animation.play(direction > 0 ? 'moveRight' : 'moveLeft');
 		}
-		else if (body.velocity.length == 0)
+		else
 		{
-			if (direction == 1)
-			{
-				animation.play('idleRight');
-			}
-			else if (direction == -1)
-			{
-				animation.play('idleLeft');
-			}
+			animation.play(direction > 0 ? 'idleRight' : 'idleLeft');
 		}
 	}
 }

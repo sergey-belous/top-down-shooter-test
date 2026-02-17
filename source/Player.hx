@@ -1,46 +1,66 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.util.FlxColor;
 
 class Player extends Character
 {
 	public var isSlowingDown:Bool = false;
+	public var moveSpeed:Float = 180;
+	public var debugHitbox:FlxSprite = null;
 
-	public function new(width:Int, height:Int, xPos:Float, yPos:Float)
+	public function new(widthInit:Int, heightInit:Int, xPosInit:Float, yPosInit:Float)
 	{
-		super(width, height, xPos, yPos, FlxColor.MAGENTA, 0, false);
-		setCollision(Character.GROUP_PLAYER, Character.MASK_ALL, Character.CB_PLAYER);
-		loadGraphic("assets/images/space-marine-sprite-sheet.png", true, 250, 250);
+		super(widthInit, heightInit, xPosInit, yPosInit, 0, false);
+		createRectangularBody(widthInit, heightInit);
+		loadGraphic("assets/images/space-marine-sprite-sheet.png", true, 214, 272);
 		animation.add("moveRight", [0, 1, 2], 12, true, false);
 		animation.add("moveLeft", [0, 1, 2], 12, true, true);
 		animation.add('idleRight', [0], 1, false, false);
 		animation.add('idleLeft', [0], 1, false, true);
-		setGraphicSize(64, 64);
-		updateHitbox();
+		setGraphicSize(widthInit, heightInit);
+		width = widthInit;
+		height = heightInit;
+		// updateHitbox();
+		// offset.set(0, 0);
+		// origin.set(0, 0);
+		// body.userData.sprite = this;
+		// setBodyMaterial(.5, .5, .5, 2);
+		// body.angularVel = 0;
+		// setPosition(xPos, yPos);
+		setCollision(Character.GROUP_PLAYER, Character.MASK_ALL, Character.CB_PLAYER);
+		// updateHitbox();
 	}
 
 	public function handleInput():Void
 	{
-		// Управление с клавиатуры - устанавливаем скорость напрямую
+		// Управление с клавиатуры - задаем скорость
+		var vx:Float = 0;
+		var vy:Float = 0;
 		if (FlxG.keys.pressed.W)
 		{
-			body.position.y -= 5;
-			isSlowingDown = false;
+			vy -= 1;
 		}
 		if (FlxG.keys.pressed.S)
 		{
-			body.position.y += 5;
-			isSlowingDown = false;
+			vy += 1;
 		}
 		if (FlxG.keys.pressed.A)
 		{
-			body.position.x -= 5;
-			isSlowingDown = false;
+			vx -= 1;
 		}
 		if (FlxG.keys.pressed.D)
 		{
-			body.position.x += 5;
+			vx += 1;
+		}
+
+		if (vx != 0 || vy != 0)
+		{
+			var len = Math.sqrt(vx * vx + vy * vy);
+			vx = (vx / len) * moveSpeed;
+			vy = (vy / len) * moveSpeed;
+			body.velocity.setxy(vx, vy);
 			isSlowingDown = false;
 		}
 
@@ -63,26 +83,39 @@ class Player extends Character
 	}
 	override public function updateMovementAnimation():Void
 	{
-		if (body.velocity.length > 0 && body.velocity.x > 0 || FlxG.keys.pressed.D)
+		if (animation == null)
 		{
-			direction = 1;
-			animation.play('moveRight');
+			return;
 		}
-		else if (body.velocity.length > 0 && body.velocity.x < 0 || FlxG.keys.pressed.A)
+		var speed = body.velocity.length;
+		if (speed > 0 || FlxG.keys.pressed.W || FlxG.keys.pressed.S || FlxG.keys.pressed.A || FlxG.keys.pressed.D)
 		{
-			animation.play('moveLeft');
-			direction = -1;
-		}
-		else if (body.velocity.length == 0)
-		{
-			if (direction == 1)
+			if (body.velocity.x < 0 || FlxG.keys.pressed.A)
 			{
-				animation.play('idleRight');
+				direction = -1;
 			}
-			else if (direction == -1)
+			else if (body.velocity.x > 0 || FlxG.keys.pressed.D)
 			{
-				animation.play('idleLeft');
+				direction = 1;
 			}
+			animation.play(direction > 0 ? 'moveRight' : 'moveLeft');
 		}
+		else
+		{
+			animation.play(direction > 0 ? 'idleRight' : 'idleLeft');
+		}
+	}
+
+	override public function applyDeceleration(elapsed:Float):Void
+	{
+		body.velocity.setxy(0, 0);
+	}
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+		updateHitbox();
+		x = body.position.x - (width / 2);
+		y = body.position.y - (height / 2);
+		trace(x, y, width, height, body.position.x, body.position.y);
 	}
 }

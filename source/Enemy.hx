@@ -1,44 +1,57 @@
 package;
 
+import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.util.FlxColor;
 
 class Enemy extends Character
 {
-	public function new(width:Int, height:Int, xPos:Float, yPos:Float)
+	public var debugHitbox:FlxSprite = null;
+
+	public function new(widthInit:Int, heightInit:Int, xPosInit:Float, yPosInit:Float)
 	{
-		super(width, height, xPos, yPos, FlxColor.BROWN, 10, true);
+		super(widthInit, heightInit, xPosInit, yPosInit, 0, true);
+		createRectangularBody(widthInit, heightInit);
+		loadGraphic("assets/images/chaos-marine-sprite-sheet.png", true, 220, 250);
+		animation.add("moveRight", [0, 1, 2], 12, true, false);
+		animation.add("moveLeft", [0, 1, 2], 12, true, true);
+		animation.add('idleRight', [0], 1, false, false);
+		animation.add('idleLeft', [0], 1, false, true);
+		setGraphicSize(widthInit, heightInit);
+		width = widthInit;
+		height = heightInit;
+		// updateHitbox();
+		// offset.set(0, 0);
+		// origin.set(0, 0);
+		// body.userData.sprite = this;
+		// setBodyMaterial(.5, .5, .5, 2);
+		// body.angularVel = 10;
+		// setPosition(xPos, yPos);
 		setCollision(Character.GROUP_TARGET, Character.MASK_ALL, Character.CB_TARGET);
-		loadGraphic("assets/images/chaos-marine-sprite-sheet.png", true, 250, 250);
-		animation.add("moveRight", [0, 1, 2], 12, true);
-		animation.add("moveLeft", [0, 1, 2], 12, false);
-		animation.add('idleRight', [0], 1, true);
-		animation.add('idleLeft', [0], 1, false);
-		setGraphicSize(64, 64);
-		updateHitbox();
 	}
 
 	override public function updateMovementAnimation():Void
 	{
-		if (body.velocity.length > 5 && body.velocity.x > 0)
+		if (animation == null)
 		{
-			direction = 1;
-			animation.play('moveRight');
+			return;
 		}
-		else if (body.velocity.length > 5 && body.velocity.x < 0)
+		var speed = body.velocity.length;
+		if (speed > 5)
 		{
-			animation.play('moveLeft');
-			direction = -1;
+			if (body.velocity.x < 0)
+			{
+				direction = 1;
+			}
+			else if (body.velocity.x > 0)
+			{
+				direction = -1;
+			}
+			animation.play(direction > 0 ? 'moveRight' : 'moveLeft');
 		}
-		else if (body.velocity.length == 5)
+		else
 		{
-			if (direction == 1)
-			{
-				animation.play('idleRight');
-			}
-			else if (direction == -1)
-			{
-				animation.play('idleLeft');
-			}
+			animation.play(direction > 0 ? 'idleRight' : 'idleLeft');
 		}
 	}
 }

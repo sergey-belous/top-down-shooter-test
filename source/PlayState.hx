@@ -8,10 +8,10 @@ import flixel.group.FlxGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import haxe.ds.ObjectMap;
+import nape.callbacks.CbType;
 import nape.constraint.PivotJoint;
 import nape.dynamics.InteractionGroup;
 import nape.geom.AABB;
-import nape.geom.Vec2;
 import nape.phys.Body;
 import openfl.Assets;
 import openfl.display.Sprite;
@@ -31,7 +31,7 @@ class PlayState extends FlxState
 	public var deadGroup:FlxTypedGroup<FlxSprite>;
 	public var maxNumber:Int;
 
-	public var levels:Int = 10;
+	public var levels:Int = 5;
 	public var bricks:Array<Enemy>;
 	public var shooter:Shooter;
 	public var handJoint:PivotJoint;
@@ -39,18 +39,23 @@ class PlayState extends FlxState
 	public var brickHeight:Int;
 	public var brickWidth:Int;
 
+	var allPlayers = new FlxGroup();
+	var level:CustomNapeTilemap;
+	var firstRun:Bool = false;
+	var currentLevel:String = "assets/data/level1.csv";
+
 	var layout:FlxSprite;
 	var stampedBricks:FlxGroup; // Группа для отпечатанных блоков
 
 	override public function create()
 	{
 
-		brickHeight = 64;
-		brickWidth = brickHeight;
+		brickHeight = 72;
+		brickWidth = 64;
 
 		super.create();
 
-		bgColor = 0xfffa0808;
+		bgColor = 0xff6ee2ff;
 
 		layout = new FlxSprite(0,0);
 		layout = layout.makeGraphic(640, 480, bgColor);
@@ -61,6 +66,11 @@ class PlayState extends FlxState
 		add(stampedBricks);
 
 		FlxNapeSpace.init();
+		FlxNapeSpace.drawDebug = true;
+		if (Constants.oneWayType == null)
+		{
+			Constants.oneWayType = new CbType();
+		}
 
 		// var w:Int = FlxG.width;
 		// var h:Int = FlxG.height;
@@ -78,27 +88,30 @@ class PlayState extends FlxState
 		// terrain.invalidate(new AABB(0, 0, w, h), this);
 
 		// add(terrain.sprite);
+		walls = FlxNapeSpace.createWalls(0, 0, 0, 0, 10);
 
-		shooter = new Shooter();
-		add(shooter);
+		loadLevel(currentLevel);
 
-		walls = FlxNapeSpace.createWalls(0, 0, 640, 480, 10);
-
-		box = new Player(32, 32, 48, 48);
+		box = new Player(64, 82, 148, 148);
 		add(box);
 
-		lazer = new FlxWeapon("lazer", box, "x", "y");
- 		
-		surrounding = new Character(64, 64, 48, 48, FlxColor.MAGENTA);
+
+		surrounding = new Character(64, 82, 248, 148);
+		surrounding.makeGraphic(64, 82, FlxColor.RED);
+		surrounding.createRectangularBody(64, 82);
 		add(surrounding);
 
-		lazer.makePixelBullet(50, 5, 5);
-		lazer.setBulletSpeed(100);
+		// lazer = new FlxWeapon("lazer", box, "x", "y");
 
-		add(lazer.group);
+		// lazer.makePixelBullet(50, 5, 5);
+		// lazer.setBulletSpeed(100);
+
+		// add(lazer.group);
 
 		createBricks();
 
+		shooter = new Shooter();
+		add(shooter);
 		shooter.setBox(box);
 
 		deadGroup = new FlxTypedGroup(2048);
@@ -206,6 +219,22 @@ class PlayState extends FlxState
 		return false;
 	}
 
+	function loadLevel(file:String)
+	{
+		currentLevel = file;
+
+		if (level != null)
+		{
+			level.body.space = null;
+			remove(level);
+		}
+
+		level = new CustomNapeTilemap(file, "assets/images/tiles.png", Constants.TILE_SIZE);
+		level.body.setShapeMaterials(Constants.platformMaterial);
+		level.spawnPoints.sort(function(_, _) return FlxG.random.bool() ? -1 : 1);
+		add(level);
+	}
+
 	override public function update(elapsed:Float)
 	{
 		FlxNapeSpace.space.gravity.setxy(0, 0);
@@ -239,34 +268,6 @@ class PlayState extends FlxState
 		for (brick in bricks)
 		{
 			brick.updateHealthBar();
-		}
-
-		// Обработка столкновений снарядов с блоками
-		if (shooter.collides && shooter.collidesSpr != null)
-		{
-			var collisionPoint = new Vec2(shooter.collidesSpr.x, shooter.collidesSpr.y);
-			var collidedBodies = FlxNapeSpace.space.bodiesInCircle(collisionPoint, 96);
-			
-			collidedBodies.foreach(function(body)
-			{
-				if (body != box.body && body != walls)
-				{
-					// Ищем соответствующий блок
-					for (brick in bricks)
-					{
-						if (brick.body == body)
-						{
-							// Наносим урон блоку (например, 34 урона за попадание)
-							damageBrick(brick, 34);
-							break;
-						}
-					}
-				}
-			});
-
-			// Убиваем снаряд после столкновения
-			shooter.collidesSpr.kill();
-			shooter.collides = false;
 		}
 
 		super.update(elapsed);

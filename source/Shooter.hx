@@ -38,6 +38,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 	public var collides:Bool = false;
 	public var collidesSpr:FlxNapeSprite = null;
+	public var collidesTarget:FlxNapeSprite = null;
 
 	public var disableShooting:Bool;
 
@@ -57,7 +58,9 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 		for (i in 0...maxSize)
 		{
 			var spr = new FlxNapeSprite(0, 0);
-			spr.makeGraphic(2, 2, 0x0);
+			// Match visual hitbox to physical bullet radius (8px).
+			spr.makeGraphic(16, 16, 0x0);
+			spr.alpha = 0;
 
 			spr.antialiasing = true;
 			spr.body.allowRotation = false;
@@ -66,6 +69,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 			spr.body.cbTypes.add(CB_BULLET);
 			spr.body.isBullet = true;
 			spr.body.setShapeFilters(new InteractionFilter(Character.GROUP_BULLET, Character.MASK_ALL & ~Character.GROUP_PLAYER));
+			spr.body.userData.sprite = spr;
 			spr.kill();
 			add(spr);
 		}
@@ -112,8 +116,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 			// Переводим центр снаряда в координаты верхнего левого угла
 			// (вычитаем половину размеров снаряда)
-			spr.body.position.x = projectileCenterX - spr.width / 2;
-			spr.body.position.y = projectileCenterY - spr.height / 2;
+			spr.setPosition(projectileCenterX - spr.width / 2, projectileCenterY - spr.height / 2);
 
 			// Задаем скорость в направлении мыши
 			// Используем нормализованный вектор направления и умножаем на импульс
@@ -130,14 +133,48 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 	public function onBulletCollides(clbk:InteractionCallback)
 	{
-		var spr = getFirstAlive();
-		if (spr != null) {
-			this.collidesSpr = spr;
-			trace('spr', spr);
-			spr.kill();
+		var body1 = clbk.int1.castBody;
+		var body2 = clbk.int2.castBody;
+		if (body1 == null || body2 == null)
+		{
+			return;
 		}
 
+		var bulletBody = body1.cbTypes.has(CB_BULLET) ? body1 : body2;
+		var targetBody = bulletBody == body1 ? body2 : body1;
+		var bulletSprite:FlxNapeSprite = cast bulletBody.userData.sprite;
+		if (bulletSprite == null)
+		{
+			return;
+		}
+
+		this.collidesTarget = cast targetBody.userData.sprite;
+		this.collidesSpr = bulletSprite;
 		this.collides = true;
+		if (this.collides && this.collidesSpr != null)
+		{
+			var bullet = this.collidesSpr;
+			var target = this.collidesTarget;
+			if (target != null && Std.isOfType(target, Enemy))
+			{
+				var enemy:Enemy = cast target;
+				if (enemy.debugHitbox != null && !bullet.overlaps(enemy.debugHitbox))
+				{
+					return;
+				}
+				var state = FlxG.state;
+				if (Std.isOfType(state, PlayState))
+				{
+					cast(state, PlayState).damageBrick(enemy, 34);
+				}
+			}
+
+			// Убиваем снаряд после столкновения
+			bullet.kill();
+			this.collides = false;
+			this.collidesSpr = null;
+			this.collidesTarget = null;
+		}
 	}
 
 	public function setBox(_box:FlxNapeSprite)
@@ -160,8 +197,6 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 	override public function update(elapsed:Float):Void
 	{
-		this.collides = false;
-
 		super.update(elapsed);
 
 		if (mouseJoint != null)
