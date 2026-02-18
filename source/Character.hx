@@ -28,19 +28,19 @@ class HealthBar extends FlxSprite
 		var healthRatio:Float = currentHealth / maxHealth;
 		var barWidth:Int = Math.round(32 * healthRatio);
 
-		var sprite = makeGraphic(32, 4, FlxColor.GREEN);
+		makeGraphic(barWidth, 4, FlxColor.GREEN);
 
 		if (healthRatio > 0.6)
 		{
-			sprite.makeGraphic(32, 4, FlxColor.GREEN);
+			makeGraphic(barWidth, 4, FlxColor.GREEN);
 		}
 		else if (healthRatio > 0.3)
 		{
-			sprite.makeGraphic(32, 4, FlxColor.YELLOW);
+			makeGraphic(barWidth, 4, FlxColor.YELLOW);
 		}
 		else
 		{
-			sprite.makeGraphic(32, 4, FlxColor.RED);
+			makeGraphic(barWidth, 4, FlxColor.RED);
 		}
 
 		if (parentBrick.body == null)

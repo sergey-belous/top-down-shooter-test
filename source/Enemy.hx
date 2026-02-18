@@ -23,7 +23,7 @@ class Enemy extends Character
 		// updateHitbox();
 		// offset.set(0, 0);
 		// origin.set(0, 0);
-		// body.userData.sprite = this;
+		body.userData.sprite = this;
 		// setBodyMaterial(.5, .5, .5, 2);
 		// body.angularVel = 10;
 		// setPosition(xPos, yPos);

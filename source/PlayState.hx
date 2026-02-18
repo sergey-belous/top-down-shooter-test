@@ -171,13 +171,16 @@ class PlayState extends FlxState
 	// Функция для отпечатывания блока
 	private function stampBrick(brick:Enemy):Void
 	{
-		var stampedSprite = new FlxSprite(brick.x, brick.y);
-		stampedSprite.makeGraphic(brickWidth, brickHeight, FlxColor.BROWN);
+		var xPos = brick.body.position.x - (brickWidth / 2);
+		var yPos = brick.body.position.y - (brickHeight / 2);
+		var stampedSprite = new FlxSprite(xPos, yPos);
+		stampedSprite.loadGraphic('assets/images/blood.png', false, 64, 64, false);
+		stampedSprite.scale.set(1.5, 1.5);
 		stampedSprite.antialiasing = true;
 		stampedBricks.add(stampedSprite);
 
 		// Также отпечатываем на layout
-		layout.stamp(stampedSprite, Std.int(brick.x), Std.int(brick.y));
+		// layout.stamp(stampedSprite, cast(xPos, Int), cast(yPos, Int));
 	}
 
 	// Функция для удаления блока

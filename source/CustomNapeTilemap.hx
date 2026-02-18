@@ -5,6 +5,7 @@ import flixel.addons.nape.FlxNapeSpace;
 import flixel.addons.nape.FlxNapeTilemap;
 import flixel.math.FlxPoint;
 import flixel.system.FlxAssets;
+import flixel.tile.FlxBaseTilemap.FlxTilemapAutoTiling;
 import nape.geom.Vec2;
 import nape.shape.Polygon;
 
@@ -18,7 +19,7 @@ class CustomNapeTilemap extends FlxNapeTilemap
 	public function new(tiles:String, graphics:FlxTilemapGraphicAsset, tileSize:Int)
 	{
 		super();
-		loadMapFromCSV(tiles, graphics, tileSize, tileSize);
+		loadMapFromCSV(tiles, graphics, tileSize, tileSize, FlxTilemapAutoTiling.OFF);
 		setupTileIndices(TileType.BLOCK);
 
 		var vertices = new Array<Vec2>();

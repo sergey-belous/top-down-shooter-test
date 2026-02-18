@@ -11,6 +11,7 @@ import flixel.input.mouse.FlxMouseEvent;
 import flixel.input.touch.FlxTouch;
 import flixel.input.touch.FlxTouchManager;
 import flixel.math.FlxPoint;
+import flixel.system.FlxAssets.FlxGraphicAsset;
 import nape.callbacks.CbEvent;
 import nape.callbacks.CbType;
 import nape.callbacks.InteractionCallback;
@@ -82,53 +83,42 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 		if (disableShooting)
 			return;
 
+		if (box == null)
+			return;
+
 		var spr = recycle(FlxNapeSprite);
-		var trail = new Trail(spr).start(false, FlxG.elapsed);
-		FlxG.state.add(trail);
 
-		if (box != null)
+		var playerCenterX:Float = box.body != null ? box.body.position.x : box.getPosition().x + box.width / 2;
+		var playerCenterY:Float = box.body != null ? box.body.position.y : box.getPosition().y + box.height / 2;
+		var mouseX:Float = FlxG.mouse.x;
+		var mouseY:Float = FlxG.mouse.y;
+
+		var directionX:Float = mouseX - playerCenterX;
+		var directionY:Float = mouseY - playerCenterY;
+		var length:Float = Math.sqrt(directionX * directionX + directionY * directionY);
+		if (length <= 0.0001)
 		{
-			// Получаем центр спрайта игрока (позиция + половина размеров)
-			var playerCenterX:Float = box.getPosition().x + box.width / 2;
-			var playerCenterY:Float = box.getPosition().y + box.height / 2;
-		
-			// Получаем центр мыши (учитываем, что координаты мыши уже в мировых координатах)
-			var mouseX:Float = FlxG.mouse.x;
-			var mouseY:Float = FlxG.mouse.y;
-
-			// Вычисляем вектор направления от центра игрока к мыши
-			var directionX:Float = mouseX - playerCenterX;
-			var directionY:Float = mouseY - playerCenterY;
-
-			// Нормализуем вектор направления
-			var length:Float = Math.sqrt(directionX * directionX + directionY * directionY);
-			if (length > 0)
-			{
-				directionX /= length;
-				directionY /= length;
-			}
-			// Задаем расстояние от центра игрока для появления снаряда
-			var spawnDistance:Float = 36; // Расстояние от центра игрока
-
-			// Вычисляем центр снаряда
-			var projectileCenterX:Float = playerCenterX + directionX * spawnDistance;
-			var projectileCenterY:Float = playerCenterY + directionY * spawnDistance;
-
-			// Переводим центр снаряда в координаты верхнего левого угла
-			// (вычитаем половину размеров снаряда)
-			spr.setPosition(projectileCenterX - spr.width / 2, projectileCenterY - spr.height / 2);
-
-			// Задаем скорость в направлении мыши
-			// Используем нормализованный вектор направления и умножаем на импульс
-			spr.body.velocity.x = directionX * impulse;
-			spr.body.velocity.y = directionY * impulse;
-		
-			trace('Player center: ($playerCenterX, $playerCenterY)');
-			trace('Mouse: ($mouseX, $mouseY)');
-			trace('Projectile spawn: (${spr.body.position.x}, ${spr.body.position.y})');
-			trace('Direction: ($directionX, $directionY)');
-			trace('Velocity: (${spr.body.velocity.x}, ${spr.body.velocity.y})');
+			directionX = 1;
+			directionY = 0;
 		}
+		else
+		{
+			directionX /= length;
+			directionY /= length;
+		}
+
+		var spawnDistance:Float = 36;
+		var projectileCenterX:Float = playerCenterX + directionX * spawnDistance;
+		var projectileCenterY:Float = playerCenterY + directionY * spawnDistance;
+
+		spr.setPosition(projectileCenterX - spr.width / 2, projectileCenterY - spr.height / 2);
+		spr.body.velocity.x = directionX * impulse;
+		spr.body.velocity.y = directionY * impulse;
+
+		var trail = new Trail(spr, projectileCenterX, projectileCenterY, 0.25, 2).start(false, FlxG.elapsed);
+		var trail2 = new Trail(spr, projectileCenterX, projectileCenterY, 0.1, 3, 'assets/images/blast.png').start(true, FlxG.elapsed);
+		FlxG.state.add(trail);
+		FlxG.state.add(trail2);
 	}
 
 	public function onBulletCollides(clbk:InteractionCallback)
@@ -165,7 +155,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 				var state = FlxG.state;
 				if (Std.isOfType(state, PlayState))
 				{
-					cast(state, PlayState).damageBrick(enemy, 34);
+					cast(state, PlayState).damageBrick(enemy, 12);
 				}
 			}
 
@@ -227,22 +217,35 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 class Trail extends FlxEmitter
 {
 	var attach:FlxNapeSprite;
+	var hasStartPoint:Bool;
 
-	public function new(Attach:FlxNapeSprite)
+	public function new(Attach:FlxNapeSprite, ?startX:Float, ?startY:Float, ?Lifespan:Float = 0.25, ?Scale:Float = 1,
+			?Sprite:FlxGraphicAsset = "assets/images/bullet.png")
 	{
-		super(0, 0);
+		super(startX != null ? startX : 0, startY != null ? startY : 0);
 
-		// loadParticles("assets/shooter.png", 20, 0);
+		loadParticles(Sprite, 20, 0);
 		attach = Attach;
+		hasStartPoint = startX != null && startY != null;
+		if (hasStartPoint)
+		{
+			setPosition(startX, startY);
+		}
 
 		velocity.set(0, 0);
-		scale.set(1, 1, 1, 1, 0, 0, 0, 0);
-		lifespan.set(0.25);
+		scale.set(Scale, Scale, Scale, Scale, 0, 0, 0, 0);
+		lifespan.set(Lifespan);
 	}
 
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+		if (hasStartPoint)
+		{
+			// Keep initial spawn point for first frame.
+			hasStartPoint = false;
+			return;
+		}
 
 		if (attach.alive)
 		{
