@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "23";
+	app.meta.h["build"] = "24";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -16015,7 +16015,7 @@ ManifestResources.init = function(config) {
 	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf);
 	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf);
 	var bundle;
-	var data = "{\"name\":null,\"assets\":\"aoy4:pathy27:assets%2Fimages%2Fblood.pngy4:sizei8203y4:typey5:IMAGEy2:idR1y7:preloadtgoR0y33:assets%2Fimages%2FPatagonia30.jpgR2i1334R3R4R5R7R6tgoR0y26:assets%2Fimages%2Fwall.pngR2i5753R3R4R5R8R6tgoR0y42:assets%2Fimages%2Fchaos-marine-dead.png%7ER2i1242979R3y6:BINARYR5R9R6tgoR0y36:assets%2Fimages%2Fimages-go-here.txtR2zR3y4:TEXTR5R11R6tgoR0y50:assets%2Fimages%2Fchaos-marine-sprite-sheet.png%7ER2i246689R3R10R5R13R6tgoR0y30:assets%2Fimages%2Ftiles.png%7ER2i1614042R3R10R5R14R6tgoR0y32:assets%2Fimages%2Fsoldier.png%7ER2i274R3R10R5R15R6tgoR0y39:assets%2Fimages%2Fchaos-marine-dead.pngR2i748746R3R4R5R16R6tgoR0y47:assets%2Fimages%2Fchaos-marine-sprite-sheet.pngR2i230023R3R4R5R17R6tgoR0y27:assets%2Fimages%2Fblast.pngR2i5927R3R4R5R18R6tgoR0y29:assets%2Fimages%2Fterrain.pngR2i129353R3R4R5R19R6tgoR0y26:assets%2Fimages%2Ftest.pngR2i87056R3R4R5R20R6tgoR0y30:assets%2Fimages%2Fblood.png%7ER2i5054R3R10R5R21R6tgoR0y27:assets%2Fimages%2Ftiles.pngR2i1614042R3R4R5R22R6tgoR0y29:assets%2Fimages%2Fsoldier.pngR2i308R3R4R5R23R6tgoR0y29:assets%2Fimages%2Ftest.png%7ER2i73026R3R10R5R24R6tgoR0y43:assets%2Fimages%2Fchaos-marine-dead.png.kraR2i2303501R3R10R5R25R6tgoR0y47:assets%2Fimages%2Fspace-marine-sprite-sheet.pngR2i238276R3R4R5R26R6tgoR0y50:assets%2Fimages%2Fspace-marine-sprite-sheet.png%7ER2i302727R3R10R5R27R6tgoR0y31:assets%2Fimages%2Ftiles.png.kraR2i5053955R3R10R5R28R6tgoR0y28:assets%2Fimages%2Fbullet.pngR2i5022R3R4R5R29R6tgoR0y36:assets%2Fsounds%2Fsounds-go-here.txtR2zR3R12R5R30R6tgoR0y34:assets%2Fdata%2Fdata-goes-here.txtR2zR3R12R5R31R6tgoR0y26:assets%2Fdata%2Flevel1.csvR2i8880R3R12R5R32R6tgoR0y36:assets%2Fmusic%2Fmusic-goes-here.txtR2zR3R12R5R33R6tgoR2i39706R3y5:MUSICR5y28:flixel%2Fsounds%2Fflixel.mp3y9:pathGroupaR35y28:flixel%2Fsounds%2Fflixel.ogghR6tgoR2i8220R3R34R5y26:flixel%2Fsounds%2Fbeep.mp3R36aR38y26:flixel%2Fsounds%2Fbeep.ogghR6tgoR2i33629R3y5:SOUNDR5R37R36aR35R37hgoR2i6840R3R40R5R39R36aR38R39hgoR2i15744R3y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR5y30:flixel%2Ffonts%2Fnokiafc22.ttfR6tgoR2i29724R3R41R42y36:__ASSET__flixel_fonts_monsterrat_ttfR5y31:flixel%2Ffonts%2Fmonsterrat.ttfR6tgoR0y33:flixel%2Fimages%2Fui%2Fbutton.pngR2i277R3R4R5R47R6tgoR0y36:flixel%2Fimages%2Flogo%2Fdefault.pngR2i505R3R4R5R48R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fsquare.pngR2i209R3R4R5R49R6tgoR0y53:flixel%2Fimages%2Ftransitions%2Fdiagonal_gradient.pngR2i730R3R4R5R50R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fcircle.pngR2i299R3R4R5R51R6tgoR0y43:flixel%2Fimages%2Ftransitions%2Fdiamond.pngR2i236R3R4R5R52R6tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	var data = "{\"name\":null,\"assets\":\"aoy4:pathy27:assets%2Fimages%2Fblood.pngy4:sizei8203y4:typey5:IMAGEy2:idR1y7:preloadtgoR0y33:assets%2Fimages%2FPatagonia30.jpgR2i1334R3R4R5R7R6tgoR0y26:assets%2Fimages%2Fwall.pngR2i5753R3R4R5R8R6tgoR0y42:assets%2Fimages%2Fchaos-marine-dead.png%7ER2i748746R3y6:BINARYR5R9R6tgoR0y36:assets%2Fimages%2Fimages-go-here.txtR2zR3y4:TEXTR5R11R6tgoR0y50:assets%2Fimages%2Fchaos-marine-sprite-sheet.png%7ER2i246689R3R10R5R13R6tgoR0y30:assets%2Fimages%2Ftiles.png%7ER2i1614042R3R10R5R14R6tgoR0y32:assets%2Fimages%2Fsoldier.png%7ER2i274R3R10R5R15R6tgoR0y39:assets%2Fimages%2Fchaos-marine-dead.pngR2i746067R3R4R5R16R6tgoR0y47:assets%2Fimages%2Fchaos-marine-sprite-sheet.pngR2i230023R3R4R5R17R6tgoR0y27:assets%2Fimages%2Fblast.pngR2i5927R3R4R5R18R6tgoR0y29:assets%2Fimages%2Fterrain.pngR2i129353R3R4R5R19R6tgoR0y26:assets%2Fimages%2Ftest.pngR2i87056R3R4R5R20R6tgoR0y30:assets%2Fimages%2Fblood.png%7ER2i5054R3R10R5R21R6tgoR0y27:assets%2Fimages%2Ftiles.pngR2i1614042R3R4R5R22R6tgoR0y29:assets%2Fimages%2Fsoldier.pngR2i308R3R4R5R23R6tgoR0y29:assets%2Fimages%2Ftest.png%7ER2i73026R3R10R5R24R6tgoR0y43:assets%2Fimages%2Fchaos-marine-dead.png.kraR2i2323386R3R10R5R25R6tgoR0y47:assets%2Fimages%2Fspace-marine-sprite-sheet.pngR2i238276R3R4R5R26R6tgoR0y50:assets%2Fimages%2Fspace-marine-sprite-sheet.png%7ER2i302727R3R10R5R27R6tgoR0y31:assets%2Fimages%2Ftiles.png.kraR2i5053955R3R10R5R28R6tgoR0y28:assets%2Fimages%2Fbullet.pngR2i5022R3R4R5R29R6tgoR0y36:assets%2Fsounds%2Fsounds-go-here.txtR2zR3R12R5R30R6tgoR0y34:assets%2Fdata%2Fdata-goes-here.txtR2zR3R12R5R31R6tgoR0y26:assets%2Fdata%2Flevel1.csvR2i8880R3R12R5R32R6tgoR0y36:assets%2Fmusic%2Fmusic-goes-here.txtR2zR3R12R5R33R6tgoR2i39706R3y5:MUSICR5y28:flixel%2Fsounds%2Fflixel.mp3y9:pathGroupaR35y28:flixel%2Fsounds%2Fflixel.ogghR6tgoR2i8220R3R34R5y26:flixel%2Fsounds%2Fbeep.mp3R36aR38y26:flixel%2Fsounds%2Fbeep.ogghR6tgoR2i33629R3y5:SOUNDR5R37R36aR35R37hgoR2i6840R3R40R5R39R36aR38R39hgoR2i15744R3y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR5y30:flixel%2Ffonts%2Fnokiafc22.ttfR6tgoR2i29724R3R41R42y36:__ASSET__flixel_fonts_monsterrat_ttfR5y31:flixel%2Ffonts%2Fmonsterrat.ttfR6tgoR0y33:flixel%2Fimages%2Fui%2Fbutton.pngR2i277R3R4R5R47R6tgoR0y36:flixel%2Fimages%2Flogo%2Fdefault.pngR2i505R3R4R5R48R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fsquare.pngR2i209R3R4R5R49R6tgoR0y53:flixel%2Fimages%2Ftransitions%2Fdiagonal_gradient.pngR2i730R3R4R5R50R6tgoR0y42:flixel%2Fimages%2Ftransitions%2Fcircle.pngR2i299R3R4R5R51R6tgoR0y43:flixel%2Fimages%2Ftransitions%2Fdiamond.pngR2i236R3R4R5R52R6tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	var manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	var library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -17244,7 +17244,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this1.set_x(x);
 		this1.set_y(y);
 		stampedSprite.loadGraphic("assets/images/chaos-marine-dead.png",true,320,320,false);
-		stampedSprite.animation.add("dying",[5],1.5,true,false,false);
+		stampedSprite.animation.add("dying",[0,1,2,3,4,5,6],6,true,false,false);
 		stampedSprite.updateHitbox();
 		stampedSprite.setPosition(xPos,yPos);
 		stampedSprite.set_antialiasing(true);
@@ -87655,7 +87655,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 167672;
+	this.version = 769216;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";

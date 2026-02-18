@@ -177,7 +177,7 @@ class PlayState extends FlxState
 		stampedSprite.scale.set(0.3, 0.3);
 
 		stampedSprite.loadGraphic('assets/images/chaos-marine-dead.png', true, 320, 320, false);
-		stampedSprite.animation.add('dying', [5], 1.5, true, false, false);
+		stampedSprite.animation.add('dying', [0, 1, 2, 3, 4, 5, 6], 6, true, false, false);
 		stampedSprite.updateHitbox();
 		stampedSprite.setPosition(xPos, yPos);
 		stampedSprite.antialiasing = true;
