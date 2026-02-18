@@ -1,10 +1,12 @@
 export/html5/bin/assets/images/blood.png
 export/html5/bin/assets/images/Patagonia30.jpg
 export/html5/bin/assets/images/wall.png
+export/html5/bin/assets/images/chaos-marine-dead.png~
 export/html5/bin/assets/images/images-go-here.txt
 export/html5/bin/assets/images/chaos-marine-sprite-sheet.png~
 export/html5/bin/assets/images/tiles.png~
 export/html5/bin/assets/images/soldier.png~
+export/html5/bin/assets/images/chaos-marine-dead.png
 export/html5/bin/assets/images/chaos-marine-sprite-sheet.png
 export/html5/bin/assets/images/blast.png
 export/html5/bin/assets/images/terrain.png
@@ -13,6 +15,7 @@ export/html5/bin/assets/images/blood.png~
 export/html5/bin/assets/images/tiles.png
 export/html5/bin/assets/images/soldier.png
 export/html5/bin/assets/images/test.png~
+export/html5/bin/assets/images/chaos-marine-dead.png.kra
 export/html5/bin/assets/images/space-marine-sprite-sheet.png
 export/html5/bin/assets/images/space-marine-sprite-sheet.png~
 export/html5/bin/assets/images/tiles.png.kra

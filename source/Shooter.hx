@@ -12,6 +12,7 @@ import flixel.input.touch.FlxTouch;
 import flixel.input.touch.FlxTouchManager;
 import flixel.math.FlxPoint;
 import flixel.system.FlxAssets.FlxGraphicAsset;
+import haxe.ds.ObjectMap;
 import nape.callbacks.CbEvent;
 import nape.callbacks.CbType;
 import nape.callbacks.InteractionCallback;
@@ -34,6 +35,11 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 	public var mouseJoint:DistanceJoint;
 	public var impulse = 2500;
+	public var bulletLifetime:Float = 1.0;
+	public var fireRate:Float = 8.0;
+
+	var bulletTimeLeft:ObjectMap<FlxNapeSprite, Float> = new ObjectMap();
+	var fireCooldown:Float = 0;
 
 	public var box:FlxNapeSprite = null;
 
@@ -54,7 +60,6 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 		background.makeGraphic(640, 480, 0xFF000000);
 		background.alpha = 1;
 		FlxG.state.insert(0, background);
-		FlxMouseEvent.add(background, launchProjectile);
 
 		for (i in 0...maxSize)
 		{
@@ -78,7 +83,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 		FlxNapeSpace.space.listeners.add(new InteractionListener(CbEvent.BEGIN, InteractionType.COLLISION, CB_BULLET, Character.CB_TARGET, onBulletCollides));
 	}
 
-	function launchProjectile(spr:FlxSprite)
+	function launchProjectile():Void
 	{
 		if (disableShooting)
 			return;
@@ -87,6 +92,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 			return;
 
 		var spr = recycle(FlxNapeSprite);
+		bulletTimeLeft.set(spr, bulletLifetime);
 
 		var playerCenterX:Float = box.body != null ? box.body.position.x : box.getPosition().x + box.width / 2;
 		var playerCenterY:Float = box.body != null ? box.body.position.y : box.getPosition().y + box.height / 2;
@@ -161,6 +167,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 
 			// Убиваем снаряд после столкновения
 			bullet.kill();
+			bulletTimeLeft.remove(bullet);
 			this.collides = false;
 			this.collidesSpr = null;
 			this.collidesTarget = null;
@@ -188,6 +195,45 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+		fireCooldown -= elapsed;
+		if (fireCooldown < 0)
+		{
+			fireCooldown = 0;
+		}
+
+		for (sprite in members)
+		{
+			if (sprite == null || !sprite.alive || !bulletTimeLeft.exists(sprite))
+			{
+				continue;
+			}
+
+			var timeLeft = bulletTimeLeft.get(sprite) - elapsed;
+			if (timeLeft <= 0)
+			{
+				sprite.kill();
+				bulletTimeLeft.remove(sprite);
+			}
+			else
+			{
+				bulletTimeLeft.set(sprite, timeLeft);
+			}
+		}
+		if (!disableShooting && box != null)
+		{
+			var triggerPressed = FlxG.mouse.pressed;
+			var triggerJustPressed = FlxG.mouse.justPressed;
+
+			if (triggerJustPressed)
+			{
+				fireCooldown = 0;
+			}
+			if (triggerPressed && fireCooldown <= 0)
+			{
+				launchProjectile();
+				fireCooldown = fireRate > 0 ? 1.0 / fireRate : 0;
+			}
+		}
 
 		if (mouseJoint != null)
 		{

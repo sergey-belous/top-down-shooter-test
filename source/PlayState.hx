@@ -174,10 +174,28 @@ class PlayState extends FlxState
 		var xPos = brick.body.position.x - (brickWidth / 2);
 		var yPos = brick.body.position.y - (brickHeight / 2);
 		var stampedSprite = new FlxSprite(xPos, yPos);
-		stampedSprite.loadGraphic('assets/images/blood.png', false, 64, 64, false);
-		stampedSprite.scale.set(1.5, 1.5);
+		stampedSprite.scale.set(0.3, 0.3);
+
+		stampedSprite.loadGraphic('assets/images/chaos-marine-dead.png', true, 320, 320, false);
+		stampedSprite.animation.add('dying', [5], 1.5, true, false, false);
+		stampedSprite.updateHitbox();
+		stampedSprite.setPosition(xPos, yPos);
 		stampedSprite.antialiasing = true;
 		stampedBricks.add(stampedSprite);
+		stampedSprite.animation.play('dying');
+
+		// stampedSprite.loadGraphic('assets/images/chaos-marine-dead.png', true, 640, 320, false);
+		// stampedSprite.animation.add('dying-phase-0', [6], 10, false, false, false);
+		// stampedSprite.updateHitbox();
+		// stampedSprite.setPosition(xPos, yPos);
+		// stampedSprite.animation.play('dying-phase-0');
+
+		// stampedSprite.loadGraphic('assets/images/chaos-marine-dead.png', true, 960, 320, false);
+		// stampedSprite.animation.add('dying-phase-dead', [5], 10, false, false, false);
+		// stampedSprite.updateHitbox();
+		// stampedSprite.setPosition(xPos, yPos);
+		// stampedSprite.animation.play('dying-phase-dead');
+		// stampedSprite.animation.stop();
 
 		// Также отпечатываем на layout
 		// layout.stamp(stampedSprite, cast(xPos, Int), cast(yPos, Int));
