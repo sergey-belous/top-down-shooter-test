@@ -26,6 +26,7 @@
 -D lime-howlerjs
 -D lime-html5
 -D FLX_NO_HEALTH
+-D lime_disable_assets_version
 -D lime-threads
 -D tools=8.2.1
 -D ANDROID_SDK=/usr/lib/android-sdk
