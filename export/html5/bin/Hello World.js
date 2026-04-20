@@ -921,7 +921,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "24";
+	app.meta.h["build"] = "25";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "Hello World";
 	app.meta.h["name"] = "Hello World";
@@ -87742,7 +87742,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 93602;
+	this.version = 52660;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
