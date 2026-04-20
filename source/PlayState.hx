@@ -42,7 +42,7 @@ class PlayState extends FlxState
 	var allPlayers = new FlxGroup();
 	var level:CustomNapeTilemap;
 	var firstRun:Bool = false;
-	var currentLevel:String = "assets/data/level1.csv";
+	var currentLevel:String = "map.json";
 
 	var layout:FlxSprite;
 	var stampedBricks:FlxGroup; // Группа для отпечатанных блоков
@@ -60,10 +60,6 @@ class PlayState extends FlxState
 		layout = new FlxSprite(0,0);
 		layout = layout.makeGraphic(640, 480, bgColor);
 		add(layout);
-
-		// Группа для отпечатанных блоков (выше бекграунда, но ниже активных блоков)
-		stampedBricks = new FlxGroup();
-		add(stampedBricks);
 
 		FlxNapeSpace.init();
 		FlxNapeSpace.drawDebug = true;
@@ -92,9 +88,13 @@ class PlayState extends FlxState
 
 		loadLevel(currentLevel);
 
-		box = new Player(64, 82, 148, 148);
-		add(box);
+		// Группа для отпечатанных блоков (выше бекграунда, но ниже активных блоков)
+		stampedBricks = new FlxGroup();
+		add(stampedBricks);
 
+		box = new Player(64, 82, 148 + 550, 148 + 550);
+		add(box);
+		configureCamera();
 
 		surrounding = new Character(64, 82, 248, 148);
 		surrounding.makeGraphic(64, 82, FlxColor.RED);
@@ -137,11 +137,13 @@ class PlayState extends FlxState
 			for (j in 0...(levels - i))
 			{
 				brick = new Enemy(brickWidth, brickHeight, (FlxG.width / 2 - brickWidth / 2 * (levels - i - 1))
-					+ brickWidth * j,
+					+ brickWidth * j
+					+ 550,
 					FlxG.height
 					- brickHeight / 2
 					- brickHeight * i
-					+ 2);
+					+ 2
+					+ 550);
 				add(brick);
 				bricks.push(brick);
 				if (brick.healthBar != null)
@@ -177,7 +179,7 @@ class PlayState extends FlxState
 		stampedSprite.scale.set(0.3, 0.3);
 
 		stampedSprite.loadGraphic('assets/images/chaos-marine-dead.png', true, 320, 320, false);
-		stampedSprite.animation.add('dying', [5], 1.5, true, false, false);
+		stampedSprite.animation.add('dying', [0, 1, 2, 3, 4, 5, 6], 6, true, false, false);
 		stampedSprite.updateHitbox();
 		stampedSprite.setPosition(xPos, yPos);
 		stampedSprite.antialiasing = true;
@@ -246,6 +248,14 @@ class PlayState extends FlxState
 
 		if (level != null)
 		{
+			if (level.backgroundLayer != null)
+			{
+				remove(level.backgroundLayer);
+			}
+			if (level.foregroundLayer != null)
+			{
+				remove(level.foregroundLayer);
+			}
 			level.body.space = null;
 			remove(level);
 		}
@@ -253,7 +263,29 @@ class PlayState extends FlxState
 		level = new CustomNapeTilemap(file, "assets/images/tiles.png", Constants.TILE_SIZE);
 		level.body.setShapeMaterials(Constants.platformMaterial);
 		level.spawnPoints.sort(function(_, _) return FlxG.random.bool() ? -1 : 1);
+		if (level.backgroundLayer != null)
+		{
+			add(level.backgroundLayer);
+		}
 		add(level);
+		if (level.foregroundLayer != null)
+		{
+			add(level.foregroundLayer);
+		}
+		configureCamera();
+	}
+
+	function configureCamera():Void
+	{
+		if (box == null || level == null)
+		{
+			return;
+		}
+
+		FlxG.camera.follow(box);
+		var mapWidth = level.scaledWidth;
+		var mapHeight = level.scaledHeight;
+		FlxG.camera.setScrollBoundsRect(level.x, level.y, mapWidth, mapHeight, true);
 	}
 
 	override public function update(elapsed:Float)

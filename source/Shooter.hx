@@ -71,7 +71,7 @@ class Shooter extends FlxTypedGroup<FlxNapeSprite>
 			spr.antialiasing = true;
 			spr.body.allowRotation = false;
 			spr.createCircularBody(8);
-			spr.setBodyMaterial(0, .2, .4, 20);
+			spr.setBodyMaterial(0, .2, .4, 1);
 			spr.body.cbTypes.add(CB_BULLET);
 			spr.body.isBullet = true;
 			spr.body.setShapeFilters(new InteractionFilter(Character.GROUP_BULLET, Character.MASK_ALL & ~Character.GROUP_PLAYER));

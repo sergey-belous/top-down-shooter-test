@@ -24,6 +24,7 @@ export/html5/bin/assets/sounds/sounds-go-here.txt
 export/html5/bin/assets/data/data-goes-here.txt
 export/html5/bin/assets/data/level1.csv
 export/html5/bin/assets/music/music-goes-here.txt
+export/html5/bin/map.json
 export/html5/bin/flixel/sounds/flixel.mp3
 export/html5/bin/flixel/sounds/beep.mp3
 export/html5/bin/flixel/sounds/flixel.ogg

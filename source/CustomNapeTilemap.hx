@@ -1,13 +1,16 @@
 package;
 
 import Constants.TileType;
+import haxe.Json;
 import flixel.addons.nape.FlxNapeSpace;
 import flixel.addons.nape.FlxNapeTilemap;
 import flixel.math.FlxPoint;
 import flixel.system.FlxAssets;
 import flixel.tile.FlxBaseTilemap.FlxTilemapAutoTiling;
+import flixel.tile.FlxTilemap;
 import nape.geom.Vec2;
 import nape.shape.Polygon;
+import openfl.Assets;
 
 using Lambda;
 using logic.PhysUtil;
@@ -15,10 +18,19 @@ using logic.PhysUtil;
 class CustomNapeTilemap extends FlxNapeTilemap
 {
 	public var spawnPoints(default, null) = new Array<FlxPoint>();
+	public var backgroundLayer:FlxTilemap = null;
+	public var foregroundLayer:FlxTilemap = null;
 
 	public function new(tiles:String, graphics:FlxTilemapGraphicAsset, tileSize:Int)
 	{
 		super();
+
+		if (StringTools.endsWith(tiles.toLowerCase(), ".json"))
+		{
+			loadFromTiledJson(tiles, graphics, tileSize);
+			return;
+		}
+
 		loadMapFromCSV(tiles, graphics, tileSize, tileSize, FlxTilemapAutoTiling.OFF);
 		setupTileIndices(TileType.BLOCK);
 
@@ -76,6 +88,68 @@ class CustomNapeTilemap extends FlxNapeTilemap
 			point.x += scaledTileHeight * 0.5;
 			spawnPoints.push(point);
 		}
+	}
+
+	function loadFromTiledJson(mapPath:String, graphics:FlxTilemapGraphicAsset, tileSize:Int):Void
+	{
+		var rawText = Assets.getText(mapPath);
+		var mapData:Dynamic = Json.parse(rawText);
+		var width:Int = cast mapData.width;
+		var height:Int = cast mapData.height;
+		var tileWidth:Int = mapData.tilewidth != null ? cast mapData.tilewidth : tileSize;
+		var tileHeight:Int = mapData.tileheight != null ? cast mapData.tileheight : tileSize;
+		var expectedCount = width * height;
+
+		var backgroundData = extractLayerDataById(mapData.layers, 1, expectedCount);
+		var obstaclesData = extractLayerDataById(mapData.layers, 4, expectedCount);
+		var foregroundData = extractLayerDataById(mapData.layers, 5, expectedCount);
+
+		backgroundLayer = new FlxTilemap();
+		backgroundLayer.loadMapFromArray(backgroundData, width, height, graphics, tileWidth, tileHeight, FlxTilemapAutoTiling.OFF);
+		backgroundLayer.antialiasing = antialiasing;
+
+		loadMapFromArray(obstaclesData, width, height, graphics, tileWidth, tileHeight, FlxTilemapAutoTiling.OFF);
+		setupCollideIndex(1);
+
+		foregroundLayer = new FlxTilemap();
+		foregroundLayer.loadMapFromArray(foregroundData, width, height, graphics, tileWidth, tileHeight, FlxTilemapAutoTiling.OFF);
+		foregroundLayer.antialiasing = antialiasing;
+
+		spawnPoints = [];
+	}
+
+	function extractLayerDataById(layers:Dynamic, layerId:Int, expectedCount:Int):Array<Int>
+	{
+		var result = new Array<Int>();
+		var list:Array<Dynamic> = cast layers;
+		for (layer in list)
+		{
+			var type:String = cast layer.type;
+			var id:Int = cast layer.id;
+			if (type == "tilelayer" && id == layerId)
+			{
+				var data:Array<Dynamic> = cast layer.data;
+				for (value in data)
+				{
+					result.push(normalizeGid(cast value));
+				}
+				break;
+			}
+		}
+
+		if (result.length == 0)
+		{
+			for (_ in 0...expectedCount)
+			{
+				result.push(0);
+			}
+		}
+		return result;
+	}
+
+	inline function normalizeGid(rawValue:Int):Int
+	{
+		return rawValue & 0x1FFFFFFF;
 	}
 
 	function placeCustomPolygonSafe(tileIndices:Array<Int>, vertices:Array<Vec2>):Void

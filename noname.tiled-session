@@ -1,0 +1,23 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+    },
+    "last.imagePath": "/home/sj/projects/top-down-shooter-test/assets/images",
+    "map.height": 100,
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 22,
+    "map.tileWidth": 22,
+    "map.width": 100,
+    "openFiles": [
+    ],
+    "project": "noname.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 22,
+        "width": 22
+    }
+}
